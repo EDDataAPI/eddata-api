@@ -27,10 +27,10 @@ console.log(_ts())
 // Initalise default value for env vars before other imports
 console.log('Configuring environment …')
 const {
-  EDDATA_CACHE_DIR,
   EDDATA_API_DEFAULT_CACHE_CONTROL,
   EDDATA_API_BASE_URL,
-  EDDATA_API_LOCAL_PORT
+  EDDATA_API_LOCAL_PORT,
+  EDDATA_CACHE_DIR
 } = require('./lib/consts')
 
 console.log('Loading dependancies …')
@@ -50,7 +50,7 @@ const updateGalnetNews = require('./lib/cron-tasks/galnet-news')
 
 ;(async () => {
   // Start web service
-  console.log('Starting Ardent API service')
+  console.log('Starting EDData API service')
   const app = new Koa()
   app.use(koaBodyParser())
   app.proxy = true // Proxy headers should be passed through
@@ -131,7 +131,7 @@ process.on('SIGTERM', () => {
 })
 
 async function printStats () {
-  const pathToStats = path.join(ARDENT_CACHE_DIR, 'database-stats.json')
+  const pathToStats = path.join(EDDATA_CACHE_DIR, 'database-stats.json')
   let stats = {}
 
   try {
@@ -144,7 +144,7 @@ async function printStats () {
   }
 
   try {
-    return `Ardent API v${Package.version} Online\n` +
+    return `EDData API v${Package.version} Online\n` +
       '--------------------------\n' +
       ((Object.keys(stats).length > 0)
         ? 'Locations:\n' +

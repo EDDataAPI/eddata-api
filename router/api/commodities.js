@@ -2,12 +2,12 @@ const fs = require('fs')
 const path = require('path')
 const { paramAsBoolean } = require('../../lib/utils/parse-query-params')
 const dbAsync = require('../../lib/db/db-async')
-const { ARDENT_CACHE_DIR, DEFAULT_MAX_RESULTS_AGE } = require('../../lib/consts')
+const { EDDATA_CACHE_DIR, DEFAULT_MAX_RESULTS_AGE } = require('../../lib/consts')
 const NotFoundResponse = require('../../lib/response/not-found')
 const { getISODate } = require('../../lib/utils/dates')
 const { getSystem } = require('../../lib/utils/get-system')
 
-const COMMODITIES_REPORT = path.join(ARDENT_CACHE_DIR, 'commodities.json')
+const COMMODITIES_REPORT = path.join(EDDATA_CACHE_DIR, 'commodities.json')
 const MAX_COMMODITY_SORTED_RESULTS = 100
 const MAX_COMMODITY_SEARCH_DISTANCE = 1000
 
@@ -24,7 +24,7 @@ module.exports = (router) => {
   router.get('/api/v2/commodity/name/:commodityName', async (ctx, next) => {
     let { commodityName } = ctx.params
     commodityName = commodityName.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, '')
-    const pathToFile = path.join(ARDENT_CACHE_DIR, 'commodities', `${commodityName}`, `${commodityName}.json`)
+    const pathToFile = path.join(EDDATA_CACHE_DIR, 'commodities', `${commodityName}`, `${commodityName}.json`)
     if (!fs.existsSync(pathToFile)) return NotFoundResponse(ctx, 'Commodity not found')
     ctx.body = JSON.parse(fs.readFileSync(pathToFile))
   })

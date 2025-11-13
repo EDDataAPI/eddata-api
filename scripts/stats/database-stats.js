@@ -7,7 +7,7 @@ const dbAsync = require('../../lib/db/db-async')
 ;(async () => {
   console.log('Updating database stats…')
   console.time('Update database stats')
-  
+
   try {
     const commodityStats = await dbAsync.get(`
       SELECT
@@ -59,7 +59,7 @@ const dbAsync = require('../../lib/db/db-async')
     if (!fs.existsSync(EDDATA_CACHE_DIR)) {
       fs.mkdirSync(EDDATA_CACHE_DIR, { recursive: true })
     }
-    
+
     fs.writeFileSync(`${EDDATA_CACHE_DIR}/database-stats.json`, JSON.stringify(stats, null, 2))
     console.timeEnd('Update database stats')
     console.log('Database stats updated successfully')
