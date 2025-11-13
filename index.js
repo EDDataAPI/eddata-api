@@ -38,15 +38,12 @@ const process = require('process')
 const path = require('path')
 const fs = require('fs')
 const fsPromises = require('fs/promises')
-const cron = require('node-cron')
 const Koa = require('koa')
 const koaBodyParser = require('koa-bodyparser')
 const koaCompress = require('koa-compress')
 
 console.log('Loading libraries …')
 const router = require('./router')
-const updateCommodityTicker = require('./lib/cron-tasks/commodity-ticker')
-const updateGalnetNews = require('./lib/cron-tasks/galnet-news')
 
 ;(async () => {
   // Start web service
@@ -93,12 +90,6 @@ const updateGalnetNews = require('./lib/cron-tasks/galnet-news')
   })
 
   app.use(router.routes())
-
-  updateCommodityTicker()
-  cron.schedule('0 */5 * * * *', async () => updateCommodityTicker())
-
-  updateGalnetNews()
-  cron.schedule('0 */20 * * * *', async () => updateGalnetNews())
 
   app.listen(EDDATA_API_LOCAL_PORT)
   console.log(await printStats())
