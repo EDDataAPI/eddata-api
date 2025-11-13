@@ -1,0 +1,42 @@
+{
+  "name": "ardent-api",
+  "version": "6.2.0",
+  "description": "Ardent API provides access to data submitted to EDDN",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "crawler": "node scripts/crawler.js",
+    "crawler:dev": "cross-env NODE_ENV=development node scripts/crawler.js",
+    "dev": "cross-env NODE_ENV=development node index.js",
+    "dev:local": "cross-env NODE_ENV=development ARDENT_API_BASE_URL=http://localhost:3001/api node index.js",
+    "lint": "npx standard --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iaincollins/ardent-api.git"
+  },
+  "author": "",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/iaincollins/ardent-api/issues"
+  },
+  "homepage": "https://github.com/iaincollins/ardent-api#readme",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "better-sqlite3": "^12.4.1",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
+    "koa": "^2.16.3",
+    "koa-bodyparser": "^4.4.1",
+    "koa-compress": "^5.1.1",
+    "koa-router": "^12.0.1",
+    "node-cron": "^4.2.1"
+  },
+  "devDependencies": {
+    "standard": "^17.1.2"
+  },
+  "engines": {
+    "npm": ">=10.8.0",
+    "node": ">=24.0.0"
+  }
+}

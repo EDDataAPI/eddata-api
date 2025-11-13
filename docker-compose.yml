@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  ardent-api:
+    image: ghcr.io/edtoolbox/ardent-api:latest
+    container_name: ardent-api
+    restart: unless-stopped
+    
+    ports:
+      - "3002:3002"
+    
+    environment:
+      - NODE_ENV=production
+      - ARDENT_API_BASE_URL=${ARDENT_API_BASE_URL:-http://localhost:3002/api}
+      - ARDENT_API_LOCAL_PORT=3002
+      - ARDENT_DATA_DIR=/app/data
+      - ARDENT_CACHE_DIR=/app/data/cache
+      - ARDENT_BACKUP_DIR=/app/backups
+      - ARDENT_DOWNLOADS_DIR=/app/downloads
+      - ARDENT_DOMAIN=${ARDENT_DOMAIN:-ardent-insight.com}
+    
+    volumes:
+      # Data persistence
+      - ardent-data:/app/data
+      - ardent-cache:/app/data/cache
+      - ardent-backups:/app/backups
+      - ardent-downloads:/app/downloads
+      
+      # Optional: Mount config file
+      # - ./ardent.config:/app/ardent.config:ro
+    
+    networks:
+      - ardent-network
+    
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/api', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    labels:
+      - "com.ardent.component=api"
+      - "com.ardent.version=6.2.0"
+
+volumes:
+  ardent-data:
+    driver: local
+  ardent-cache:
+    driver: local
+  ardent-backups:
+    driver: local
+  ardent-downloads:
+    driver: local
+
+networks:
+  ardent-network:
+    driver: bridge
+    name: ardent-network
