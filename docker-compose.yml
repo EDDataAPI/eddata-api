@@ -1,8 +1,9 @@
-version: '3.8'
-
 services:
   eddata-api:
-    image: ghcr.io/eddataapi/eddata-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
     container_name: eddata-api
     restart: unless-stopped
     
