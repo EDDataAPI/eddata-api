@@ -140,6 +140,9 @@ async function printStats () {
     stats = JSON.parse(data)
   } catch (error) {
     // File doesn't exist or can't be read, use empty stats
+    if (error.code === 'ENOENT') {
+      console.warn('⚠️  Database stats not yet generated - waiting for collector')
+    }
     stats = {}
   }
 
@@ -160,7 +163,9 @@ async function printStats () {
         `* Updated in last 24 hours: ${stats?.trade?.updatedInLast24Hours?.toLocaleString() ?? 'N/A'}\n` +
         `* Unique commodities: ${stats?.trade?.uniqueCommodities?.toLocaleString() ?? 'N/A'}\n` +
         `Stats last updated: ${stats?.timestamp ?? 'N/A'}`
-        : 'Stats not generated yet')
+        : 'Stats not yet generated\n' +
+        'Waiting for eddata-collector to generate database statistics...\n' +
+        'This is normal on first startup.')
   } catch (error) {
     console.error('Error generating stats:', error)
     return 'Error: Could not load stats'
