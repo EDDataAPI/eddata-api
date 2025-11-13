@@ -1,13 +1,36 @@
 const Package = require('./package.json')
-console.log(`Ardent API v${Package.version} starting`)
+
+// Prepend time (HH:MM:SS) to all console output to improve logs and tracing
+const _origConsole = {
+  log: console.log.bind(console),
+  info: console.info.bind(console),
+  warn: console.warn.bind(console),
+  error: console.error.bind(console),
+  debug: console.debug ? console.debug.bind(console) : console.log.bind(console)
+}
+const _ts = () => new Date().toTimeString().substr(0, 8)
+for (const level of ['log', 'info', 'warn', 'error', 'debug']) {
+  console[level] = (...args) => {
+    const prefix = `[${_ts()}]`
+    if (args.length > 0 && typeof args[0] === 'string') {
+      args[0] = `${prefix} ${args[0]}`
+      _origConsole[level](...args)
+    } else {
+      _origConsole[level](prefix, ...args)
+    }
+  }
+}
+
+console.log(`EDData API v${Package.version} starting`)
+console.log(_ts())
 
 // Initalise default value for env vars before other imports
 console.log('Configuring environment …')
 const {
-  ARDENT_CACHE_DIR,
-  ARDENT_API_DEFAULT_CACHE_CONTROL,
-  ARDENT_API_BASE_URL,
-  ARDENT_API_LOCAL_PORT
+  EDDATA_CACHE_DIR,
+  EDDATA_API_DEFAULT_CACHE_CONTROL,
+  EDDATA_API_BASE_URL,
+  EDDATA_API_LOCAL_PORT
 } = require('./lib/consts')
 
 console.log('Loading dependancies …')
@@ -34,10 +57,10 @@ const updateGalnetNews = require('./lib/cron-tasks/galnet-news')
 
   // Set default headers
   app.use((ctx, next) => {
-    ctx.set('Ardent-API-Version', `${Package.version}`)
+    ctx.set('EDData-API-Version', `${Package.version}`)
 
     // Cache headers encourage caching, but with a short period (and use of state-while-revalidate)
-    ctx.set('Cache-Control', ARDENT_API_DEFAULT_CACHE_CONTROL)
+    ctx.set('Cache-Control', EDDATA_API_DEFAULT_CACHE_CONTROL)
 
     // Headers required to support requests with credentials (i.e. auth tokens)
     // while still supporting API requests from any domain
@@ -65,7 +88,7 @@ const updateGalnetNews = require('./lib/cron-tasks/galnet-news')
 
   // Redirect all /v1 API routes to the new /v2 routes
   router.get('/api/v1/:path(.*)', async (ctx, next) => {
-    const newUrl = ctx.request.url.replace(/^\/api\/v1\//, `${ARDENT_API_BASE_URL}/v2/`)
+    const newUrl = ctx.request.url.replace(/^\/api\/v1\//, `${EDDATA_API_BASE_URL}/v2/`)
     ctx.redirect(newUrl)
   })
 
@@ -77,11 +100,11 @@ const updateGalnetNews = require('./lib/cron-tasks/galnet-news')
   updateGalnetNews()
   cron.schedule('0 */20 * * * *', async () => updateGalnetNews())
 
-  app.listen(ARDENT_API_LOCAL_PORT)
+  app.listen(EDDATA_API_LOCAL_PORT)
   console.log(await printStats())
 
-  console.log(`Ardent API service started on port ${ARDENT_API_LOCAL_PORT}`)
-  console.log(`URL: ${ARDENT_API_BASE_URL}`)
+  console.log(`EDData API service started on port ${EDDATA_API_LOCAL_PORT}`)
+  console.log(`URL: ${EDDATA_API_BASE_URL}`)
 })()
 
 process.on('exit', () => console.log('Shutting down'))

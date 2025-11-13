@@ -1,30 +1,60 @@
-# Ardent API
+# EDData API
 
-The Ardent API powers [ardent-insight.com](https://ardent-insight.com)
+[![Docker Build and Deploy](https://github.com/EDDataAPI/eddata-api/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/EDDataAPI/eddata-api/actions/workflows/docker-publish.yml)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Node.js Version](https://img.shields.io/badge/Node.js-24.11.0-green.svg)](https://nodejs.org/)
+[![Docker Image](https://img.shields.io/badge/Docker-ghcr.io%2Feddataapi%2Feddata--api-blue)](https://github.com/EDDataAPI/eddata-api/pkgs/container/eddata-api)
 
-The API is considered resonably stable and no breaking changes are anticipated,
-but expect evolution of parameters that can be passed and enrichment of
-responses. 
+## 🚀 About This Software
 
-The internal logic for routes may evolve over time and this may cause the 
-content of responses to vary, based on changes to internal filters, how data 
-is processed and changes in retention policies. 
+The EDData API provides REST API access to Elite Dangerous data collected from the [Elite Dangerous Data Network (EDDN)](https://github.com/EDCD/EDDN).
 
-Related repositories:
+### 📊 Data Scope
 
-* https://github.com/iaincollins/ardent-www
-* https://github.com/iaincollins/ardent-collector
-* https://github.com/iaincollins/ardent-auth
+- **🌌 Over 150 million star systems** with detailed location data
+- **🏪 Millions of trade orders** for commodities and markets
+- **🚀 Hundreds of thousands of stations, ports, and fleet carriers**
+- **📈 Real-time updates** from the Elite Dangerous community
 
-## About this software
+### 🔧 Features
 
-The Ardent API provides access to data submitted to the Elite Dangerous Data 
-Network and is stored by the 
-[Ardent Collector](https://github.com/iaincollins/ardent-collector/).
+- **RESTful API** for data access with comprehensive endpoints
+- **Commodity trading data** with buy/sell prices and market information
+- **Station and market information** across the galaxy
+- **System search and nearby location queries**
+- **Docker-based deployment** for easy installation and scaling
+- **Automatic data caching** for improved performance
 
-The API provides an interface to look up location data for 150,000,000 star systems 
-and tracks millions of buy and sell orders for trade commodities sold in stations,
-ports and on fleet carriers throughout the Elite Dangerous galaxy.
+### 🔗 Related Repositories
+
+* [EDData Collector](https://github.com/EDDataAPI/eddata-collector) - Data collection from EDDN
+* [EDData Web](https://github.com/EDDataAPI/eddata-web) - Web interface
+* [EDData Auth](https://github.com/EDDataAPI/eddata-auth) - Authentication service
+
+## 🛠️ Installation
+
+### 📋 System Requirements
+
+- **Node.js v24.11.0 or higher** (recommended: v24.x LTS)
+- **Docker** and **Docker Compose** (for container deployment)
+- **Sufficient disk space** for databases (several GB)
+
+### 🚀 Quick Start with Docker (Recommended)
+
+```bash
+# Clone repository
+git clone https://github.com/EDDataAPI/eddata-api.git
+cd eddata-api
+
+# Start with Docker Compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f eddata-api
+
+# Check status
+curl http://localhost:3001/api/v2/stats
+```
 
 ## About the REST API
 

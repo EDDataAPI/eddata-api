@@ -1,13 +1,13 @@
 const path = require('path')
 const fsPromises = require('fs/promises')
-const KoaRouter = require('koa-router')
+const KoaRouter = require('@koa/router')
 const Package = require('../package.json')
 
 const {
-  ARDENT_API_BASE_URL,
-  ARDENT_CACHE_DIR,
-  ARDENT_BACKUP_DIR,
-  ARDENT_DOWNLOADS_DIR
+  EDDATA_API_BASE_URL,
+  EDDATA_CACHE_DIR,
+  EDDATA_BACKUP_DIR,
+  EDDATA_DOWNLOADS_DIR
 } = require('../lib/consts')
 
 const routes = {
@@ -22,7 +22,7 @@ const routes = {
 const router = new KoaRouter()
 const dbAsync = require('../lib/db/db-async')
 
-router.get('/api/v2', (ctx, next) => ctx.redirect(`${ARDENT_API_BASE_URL}/v2/stats`))
+router.get('/api/v2', (ctx, next) => ctx.redirect(`${EDDATA_API_BASE_URL}/v2/stats`))
 
 router.get('/api/v2/version', (ctx, next) => {
   ctx.body = { version: Package.version }
@@ -30,7 +30,7 @@ router.get('/api/v2/version', (ctx, next) => {
 
 router.get('/api/v2/stats', async (ctx, next) => {
   try {
-    const statsPath = path.join(ARDENT_CACHE_DIR, 'database-stats.json')
+    const statsPath = path.join(EDDATA_CACHE_DIR, 'database-stats.json')
     const data = await fsPromises.readFile(statsPath, 'utf8')
     ctx.body = JSON.parse(data)
   } catch (error) {
@@ -93,8 +93,8 @@ router.get('/api/v2/stats/stations/economies', async (ctx, next) => {
 
 router.get('/api/v2/backup', async (ctx, next) => {
   try {
-    const backupsPath = path.join(ARDENT_BACKUP_DIR, 'backup.json')
-    const downloadsPath = path.join(ARDENT_DOWNLOADS_DIR, 'downloads.json')
+    const backupsPath = path.join(EDDATA_BACKUP_DIR, 'backup.json')
+    const downloadsPath = path.join(EDDATA_DOWNLOADS_DIR, 'downloads.json')
 
     const [backupsData, downloadsData] = await Promise.all([
       fsPromises.readFile(backupsPath, 'utf8'),

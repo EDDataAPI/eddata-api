@@ -1,54 +1,81 @@
-# Build stage for dependencies
-FROM node:24-alpine AS builder
+# Multi-stage build for optimal image size and security
+FROM node:24.11.0-alpine AS base
 
-# Set working directory
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm ci --only=production
-
-# Production stage
-FROM node:24-alpine
-
-# Set working directory
-WORKDIR /app
-
-# Install required system dependencies for better-sqlite3
+# Install system dependencies for native modules
 RUN apk add --no-cache \
     python3 \
     make \
     g++ \
-    sqlite
+    sqlite \
+    && rm -rf /var/cache/apk/*
 
-# Create data directories
-RUN mkdir -p /app/data/cache
+# Build stage
+FROM base AS builder
 
-# Copy package files and installed dependencies from builder
-COPY --from=builder /app/node_modules ./node_modules
+WORKDIR /app
+
+# Copy package files first for better caching
 COPY package*.json ./
 
+# Install all dependencies (including devDependencies for building native modules)
+RUN npm ci --include=dev && \
+    npm rebuild better-sqlite3 && \
+    npm prune --production && \
+    npm cache clean --force
+
+# Production stage
+FROM base AS production
+
+# Create app user for security
+RUN addgroup -g 1001 -S eddata && \
+    adduser -S eddata -u 1001 -G eddata
+
+# Set working directory
+WORKDIR /app
+
+# Copy built node_modules from builder stage
+COPY --from=builder --chown=eddata:eddata /app/node_modules ./node_modules
+
+# Copy package files
+COPY --chown=eddata:eddata package*.json ./
+
 # Copy application files
-COPY index.js ./
-COPY lib ./lib
-COPY router ./router
-COPY LICENSE ./
-COPY README.md ./
+COPY --chown=eddata:eddata . .
 
-# Set environment variables
-ENV NODE_ENV=production \
-    ARDENT_DATA_DIR=/app/data \
-    ARDENT_CACHE_DIR=/app/data/cache \
-    ARDENT_API_LOCAL_PORT=3002
+# Create necessary directories with correct permissions
+RUN mkdir -p /app/eddata-data/cache && \
+    mkdir -p /app/eddata-backup && \
+    mkdir -p /app/eddata-downloads && \
+    chown -R eddata:eddata /app
 
-# Expose the API port
-EXPOSE 3002
+# Switch to non-root user
+USER eddata
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3002/api', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+# Expose port (default 3001)
+EXPOSE 3001
 
-# Run the API
-CMD ["node", "index.js"]
+# Add labels for better maintainability
+LABEL org.opencontainers.image.title="EDData API"
+LABEL org.opencontainers.image.description="REST API for Elite Dangerous Data from EDDN"
+LABEL org.opencontainers.image.vendor="EDDataAPI"
+LABEL org.opencontainers.image.source="https://github.com/EDDataAPI/eddata-api"
+
+# Health check with more robust endpoint testing
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD node -e " \
+        const http = require('http'); \
+        const options = { \
+            hostname: 'localhost', \
+            port: process.env.EDDATA_API_LOCAL_PORT || 3001, \
+            path: '/api/v2/stats', \
+            timeout: 5000 \
+        }; \
+        const req = http.request(options, (res) => { \
+            process.exit(res.statusCode === 200 ? 0 : 1); \
+        }); \
+        req.on('error', () => process.exit(1)); \
+        req.on('timeout', () => process.exit(1)); \
+        req.end();" || exit 1
+
+# Start application
+CMD ["npm", "start"]
