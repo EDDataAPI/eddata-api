@@ -1,4 +1,30 @@
 services:
+  # EDData Collector - Generates and updates databases
+  eddata-collector:
+    image: ghcr.io/eddataapi/eddata-collector:latest
+    container_name: eddata-collector
+    restart: unless-stopped
+    
+    environment:
+      - NODE_ENV=production
+      - EDDATA_DATA_DIR=/app/data
+      - EDDATA_CACHE_DIR=/app/data/cache
+      - EDDATA_BACKUP_DIR=/app/backups
+      - EDDATA_DOWNLOADS_DIR=/app/downloads
+    
+    volumes:
+      # Shared data volume with API
+      - eddata-data:/app/data
+      - eddata-backups:/app/backups
+      - eddata-downloads:/app/downloads
+    
+    networks:
+      - eddata-network
+    
+    labels:
+      - "com.eddata.component=collector"
+
+  # EDData API - Provides REST API access to data
   eddata-api:
     build:
       context: .
@@ -21,13 +47,17 @@ services:
       - EDDATA_DOMAIN=${EDDATA_DOMAIN:-eddata.app}
     
     volumes:
-      # Data persistence - Dokploy managed volumes
-      - eddata-data:/app/data
-      - eddata-backups:/app/backups
-      - eddata-downloads:/app/downloads
+      # Shared data volume with Collector (read-only for API)
+      - eddata-data:/app/data:ro
+      - eddata-backups:/app/backups:ro
+      - eddata-downloads:/app/downloads:ro
     
     networks:
       - eddata-network
+    
+    # Wait for collector to create initial databases
+    depends_on:
+      - eddata-collector
     
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/v2/stats', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
