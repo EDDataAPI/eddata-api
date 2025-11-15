@@ -38,13 +38,13 @@ services:
     
     environment:
       - NODE_ENV=production
-      - EDDATA_API_BASE_URL=${EDDATA_API_BASE_URL:-https://api.eddata.app/api}
+      - EDDATA_API_BASE_URL=${EDDATA_API_BASE_URL:-https://api.eddata.dev/api}
       - EDDATA_API_LOCAL_PORT=3001
       - EDDATA_DATA_DIR=/app/data
       - EDDATA_CACHE_DIR=/app/data/cache
       - EDDATA_BACKUP_DIR=/app/backups
       - EDDATA_DOWNLOADS_DIR=/app/downloads
-      - EDDATA_DOMAIN=${EDDATA_DOMAIN:-eddata.app}
+      - EDDATA_DOMAIN=${EDDATA_DOMAIN:-eddata.dev}
     
     volumes:
       # Shared data volume with Collector (read-only for API)
@@ -71,7 +71,7 @@ services:
       - "com.eddata.version=1.0.0"
       # Dokploy labels for service discovery
       - "traefik.enable=true"
-      - "traefik.http.routers.eddata-api.rule=Host(`api.eddata.app`)"
+      - "traefik.http.routers.eddata-api.rule=Host(`api.eddata.dev`)"
       - "traefik.http.routers.eddata-api.entrypoints=websecure"
       - "traefik.http.routers.eddata-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.eddata-api.loadbalancer.server.port=3001"

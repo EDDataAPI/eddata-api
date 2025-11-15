@@ -23,7 +23,7 @@ info:
     url: https://www.gnu.org/licenses/agpl-3.0
 
 servers:
-  - url: https://api.eddata.app
+  - url: https://api.eddata.dev
     description: Production API
   - url: http://localhost:3001
     description: Local development

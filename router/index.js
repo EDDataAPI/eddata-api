@@ -23,8 +23,13 @@ const router = new KoaRouter()
 const dbAsync = require('../lib/db/db-async')
 
 router.get('/api/v2', (ctx, next) => ctx.redirect(`${EDDATA_API_BASE_URL}/v2/stats`))
+router.get('/v2', (ctx, next) => ctx.redirect(`${EDDATA_API_BASE_URL}/v2/stats`))
 
 router.get('/api/v2/version', (ctx, next) => {
+  ctx.body = { version: Package.version }
+})
+
+router.get('/v2/version', (ctx, next) => {
   ctx.body = { version: Package.version }
 })
 
