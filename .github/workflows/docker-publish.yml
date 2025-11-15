@@ -6,6 +6,20 @@ on:
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: 'staging'
+      version_tag:
+        description: 'Docker image tag (leave empty for auto-generated)'
+        required: false
+        type: string
 
 env:
   REGISTRY: ghcr.io
