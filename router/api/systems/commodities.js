@@ -2,7 +2,7 @@ const dbAsync = require('../../../lib/db/db-async')
 const { paramAsBoolean } = require('../../../lib/utils/parse-query-params')
 const NotFoundResponse = require('../../../lib/response/not-found')
 const { getISODate } = require('../../../lib/utils/dates')
-const { DEFAULT_MAX_RESULTS_AGE } = require('../../../lib/consts')
+const { DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE } = require('../../../lib/consts')
 const { getSystem } = require('../../../lib/utils/get-system')
 
 module.exports = (router) => {
@@ -62,10 +62,13 @@ module.exports = (router) => {
       maxDaysAgo = DEFAULT_MAX_RESULTS_AGE
     } = ctx.query
 
+    // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
+    const validatedMaxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
+
     const filters = [
       `AND (c.demand >= ${parseInt(minVolume)} OR c.demand = 0)`, // Zero is infinite demand
       `AND c.sellPrice >= ${parseInt(minPrice)}`,
-      `AND c.updatedAtDay > '${getISODate(`-${maxDaysAgo}`)}'`
+      `AND c.updatedAtDay > '${getISODate(`-${validatedMaxDaysAgo}`)}'`
     ]
 
     if (fleetCarriers !== null) {
@@ -118,9 +121,12 @@ module.exports = (router) => {
       maxDaysAgo = DEFAULT_MAX_RESULTS_AGE
     } = ctx.query
 
+    // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
+    const validatedMaxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
+
     const filters = [
       `AND c.stock >= ${parseInt(minVolume)}`,
-      `AND c.updatedAtDay > '${getISODate(`-${maxDaysAgo}`)}'`
+      `AND c.updatedAtDay > '${getISODate(`-${validatedMaxDaysAgo}`)}'`
     ]
 
     if (maxPrice !== null) { filters.push(`AND c.buyPrice <= ${parseInt(maxPrice)}`) }

@@ -4,6 +4,7 @@ const NotFoundResponse = require('../../../lib/response/not-found')
 const { getISODate } = require('../../../lib/utils/dates')
 const {
   DEFAULT_MAX_RESULTS_AGE,
+  MAX_RESULTS_AGE,
   DEFAULT_NEARBY_SYSTEMS_DISTANCE,
   MAX_NEARBY_SYSTEMS_DISTANCE,
   MAX_NEARBY_COMMODITY_RESULTS,
@@ -28,6 +29,9 @@ module.exports = (router) => {
     const {
       maxDaysAgo = DEFAULT_MAX_RESULTS_AGE
     } = ctx.query
+
+    // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
+    const validatedMaxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
 
     const commodities = await dbAsync.all(`
       SELECT
@@ -56,7 +60,7 @@ module.exports = (router) => {
         LEFT JOIN trade.commodities c ON s.marketId = c.marketId 
       WHERE s.systemAddress = @systemAddress
         AND c.commodityName = @commodityName
-        AND c.updatedAtDay > '${getISODate(`-${maxDaysAgo}`)}'
+        AND c.updatedAtDay > '${getISODate(`-${validatedMaxDaysAgo}`)}'
       ORDER BY s.stationName
       `, { systemAddress: system.systemAddress, commodityName: commodityName.toLowerCase() })
     ctx.body = commodities
@@ -77,6 +81,9 @@ module.exports = (router) => {
       maxDaysAgo = DEFAULT_MAX_RESULTS_AGE,
       sort = null
     } = ctx.query
+
+    // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
+    maxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
 
     if (maxDistance > MAX_NEARBY_SYSTEMS_DISTANCE) { maxDistance = MAX_NEARBY_SYSTEMS_DISTANCE }
     maxDistance = parseInt(maxDistance)
@@ -152,6 +159,9 @@ module.exports = (router) => {
       maxDaysAgo = DEFAULT_MAX_RESULTS_AGE,
       sort = null
     } = ctx.query
+
+    // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
+    maxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
 
     if (maxDistance > MAX_NEARBY_SYSTEMS_DISTANCE) { maxDistance = MAX_NEARBY_SYSTEMS_DISTANCE }
     maxDistance = parseInt(maxDistance)

@@ -149,7 +149,7 @@ Returns places importing a commodity (where you can **sell**), ordered by highes
 - `minVolume` - Minimum volume/demand (default: 1)
 - `minPrice` - Minimum sell price (default: 1)
 - `fleetCarriers` - Filter fleet carriers (true/false/null)
-- `maxDaysAgo` - Maximum age of data in days (default: 30, max: 90)
+- `maxDaysAgo` - Maximum age of data in days (default: 7, max: 14)
 
 **Response:** Array of commodity orders (max 100 results).
 
@@ -165,7 +165,7 @@ Returns places exporting a commodity (where you can **buy**), ordered by lowest 
 - `minVolume` - Minimum volume/stock (default: 1)
 - `maxPrice` - Maximum buy price
 - `fleetCarriers` - Filter fleet carriers (true/false/null)
-- `maxDaysAgo` - Maximum age of data in days (default: 30, max: 90)
+- `maxDaysAgo` - Maximum age of data in days (default: 7, max: 14)
 
 **Response:** Array of commodity orders (max 100 results).
 
@@ -336,7 +336,7 @@ Returns commodities imported by the system (where you can sell).
 - `minVolume` - Minimum volume/demand (default: 1)
 - `minPrice` - Minimum sell price (default: 1)
 - `fleetCarriers` - Filter fleet carriers (true/false/null)
-- `maxDaysAgo` - Maximum age of data in days (default: 30, max: 90)
+- `maxDaysAgo` - Maximum age of data in days (default: 7, max: 14)
 
 **Response:** Array of commodity orders.
 
@@ -352,7 +352,7 @@ Returns commodities exported by the system (where you can buy).
 - `minVolume` - Minimum volume/stock (default: 1)
 - `maxPrice` - Maximum buy price
 - `fleetCarriers` - Filter fleet carriers (true/false/null)
-- `maxDaysAgo` - Maximum age of data in days (default: 30, max: 90)
+- `maxDaysAgo` - Maximum age of data in days (default: 7, max: 14)
 
 **Response:** Array of commodity orders.
 
@@ -366,7 +366,7 @@ Returns all buy/sell orders for a commodity in a specific system.
 - `commodityName` - Commodity name
 
 **Query Parameters:**
-- `maxDaysAgo` - Maximum age of data in days (default: 30, max: 90)
+- `maxDaysAgo` - Maximum age of data in days (default: 7, max: 14)
 
 **Response:** Array of commodity orders in the system.
 
@@ -384,7 +384,7 @@ Returns nearby places importing a commodity, ordered by highest price.
 - `minPrice` - Minimum sell price (default: 1)
 - `fleetCarriers` - Filter fleet carriers (true/false/null)
 - `maxDistance` - Maximum distance in light years (default: 100, max: 1000)
-- `maxDaysAgo` - Maximum age of data in days (default: 30, max: 90)
+- `maxDaysAgo` - Maximum age of data in days (default: 7, max: 14)
 
 **Response:** Array of commodity orders (first 1000 results).
 
@@ -402,7 +402,7 @@ Returns nearby places exporting a commodity, ordered by lowest price.
 - `maxPrice` - Maximum buy price
 - `fleetCarriers` - Filter fleet carriers (true/false/null)
 - `maxDistance` - Maximum distance in light years (default: 100, max: 1000)
-- `maxDaysAgo` - Maximum age of data in days (default: 30, max: 90)
+- `maxDaysAgo` - Maximum age of data in days (default: 7, max: 14)
 
 **Response:** Array of commodity orders (first 1000 results).
 
@@ -583,7 +583,7 @@ Search for stations by name (partial match supported).
 | `minPrice` | integer | 1 | - | Minimum price for imports |
 | `maxPrice` | integer | - | - | Maximum price for exports |
 | `fleetCarriers` | boolean | null | - | Filter by fleet carriers (true/false/null) |
-| `maxDaysAgo` | integer | 30 | 90 | Maximum age of data in days |
+| `maxDaysAgo` | integer | 7 | 14 | Maximum age of data in days (trading data older than 2 weeks is unreliable) |
 | `maxDistance` | integer | 100 | 500-1000 | Maximum distance in light years |
 | `minLandingPadSize` | integer | 1 | 3 | Minimum landing pad size (1=S, 2=M, 3=L) |
 

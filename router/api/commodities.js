@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const { paramAsBoolean } = require('../../lib/utils/parse-query-params')
 const dbAsync = require('../../lib/db/db-async')
-const { EDDATA_CACHE_DIR, DEFAULT_MAX_RESULTS_AGE } = require('../../lib/consts')
+const { EDDATA_CACHE_DIR, DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE } = require('../../lib/consts')
 const NotFoundResponse = require('../../lib/response/not-found')
 const { getISODate } = require('../../lib/utils/dates')
 const { getSystem } = require('../../lib/utils/get-system')
@@ -58,6 +58,9 @@ module.exports = (router) => {
       systemName = null,
       maxDistance = null
     } = ctx.query
+
+    // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
+    maxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
 
     const sqlQueryParams = {
       commodityName: commodityName.toLowerCase()
@@ -142,6 +145,9 @@ module.exports = (router) => {
       systemName = null,
       maxDistance = null
     } = ctx.query
+
+    // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
+    maxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
 
     const sqlQueryParams = {
       commodityName: commodityName.toLowerCase()

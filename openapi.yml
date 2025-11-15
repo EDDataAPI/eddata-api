@@ -994,9 +994,9 @@ components:
       in: query
       schema:
         type: integer
-        default: 30
-        maximum: 90
-      description: Maximum age of data in days
+        default: 7
+        maximum: 14
+      description: Maximum age of data in days (trading data older than 2 weeks is unreliable)
 
     MaxDistance:
       name: maxDistance
