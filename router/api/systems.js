@@ -294,4 +294,38 @@ module.exports = (router) => {
       systemZ
     })
   })
+
+  // Top 30 systems by station count
+  const topSystemsHandler = async (ctx, next) => {
+    try {
+      const topSystems = await dbAsync.all(`
+        SELECT 
+          sys.systemAddress,
+          sys.systemName,
+          sys.systemX,
+          sys.systemY,
+          sys.systemZ,
+          sys.primaryStar,
+          sys.allegiance,
+          sys.government,
+          sys.population,
+          COUNT(sta.marketId) as stationCount,
+          COUNT(CASE WHEN sta.stationType != 'FleetCarrier' THEN 1 END) as permanentStationCount
+        FROM systems.systems sys
+        LEFT JOIN stations.stations sta ON sys.systemAddress = sta.systemAddress
+        WHERE sta.stationType IS NOT NULL
+        GROUP BY sys.systemAddress
+        ORDER BY permanentStationCount DESC, stationCount DESC
+        LIMIT 30
+      `)
+
+      ctx.body = topSystems
+    } catch (error) {
+      console.error('Error fetching top systems:', error)
+      ctx.status = 500
+      ctx.body = { error: 'Failed to fetch top systems' }
+    }
+  }
+
+  registerRoute('/v2/systems/top', topSystemsHandler)
 }

@@ -17,6 +17,7 @@ const routes = {
   systemsCommodities: require('./api/systems/commodities'),
   systemsCommodity: require('./api/systems/commodity'),
   markets: require('./api/markets'),
+  stations: require('./api/stations'),
   search: require('./api/search')
 }
 const router = new KoaRouter()
@@ -150,6 +151,7 @@ routes.systems(router)
 routes.systemsCommodities(router)
 routes.systemsCommodity(router)
 routes.markets(router)
+routes.stations(router)
 routes.search(router)
 
 module.exports = router

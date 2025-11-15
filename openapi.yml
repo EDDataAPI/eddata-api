@@ -37,6 +37,8 @@ tags:
     description: Commodity trading data and reports
   - name: Systems
     description: Star system information and nearby searches
+  - name: Stations
+    description: Station information and rankings
   - name: Markets
     description: Market and station trading data
   - name: Search
@@ -69,6 +71,78 @@ paths:
       summary: Get database statistics
       description: Returns comprehensive statistics about the databases (updated every 15 minutes by collector)
       operationId: getStats
+      responses:
+        '200':
+          description: Database statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  systems:
+                    type: integer
+                    example: 102694411
+                  pointsOfInterest:
+                    type: integer
+                    example: 1500000
+                  stations:
+                    type: object
+                    properties:
+                      stations:
+                        type: integer
+                        example: 42695
+                      carriers:
+                        type: integer
+                        example: 5360
+                      updatedInLast24Hours:
+                        type: integer
+                        example: 563215
+                  trade:
+                    type: object
+                    properties:
+                      markets:
+                        type: integer
+                        example: 16419
+                      orders:
+                        type: integer
+                        example: 10773236
+                      updatedInLast24Hours:
+                        type: integer
+                        example: 563215
+                      uniqueCommodities:
+                        type: integer
+                        example: 150
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-14T12:00:00Z"
+
+  /v2/version:
+    get:
+      tags:
+        - General
+      summary: Get API version (no /api prefix)
+      description: Returns the current version of the EDData API software
+      operationId: getVersionShort
+      responses:
+        '200':
+          description: API version information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: "1.0.0"
+
+  /v2/stats:
+    get:
+      tags:
+        - General
+      summary: Get database statistics (no /api prefix)
+      description: Returns comprehensive statistics about the databases (updated every 15 minutes by collector)
+      operationId: getStatsShort
       responses:
         '200':
           description: Database statistics
@@ -233,6 +307,71 @@ paths:
                 items:
                   $ref: '#/components/schemas/CommodityReport'
 
+  /v2/commodities:
+    get:
+      tags:
+        - Commodities
+      summary: Get commodities report (no /api prefix)
+      description: Returns all known traded commodities with price ranges and supply/demand totals (excludes Fleet Carriers, updated daily)
+      operationId: getCommoditiesShort
+      responses:
+        '200':
+          description: Commodities report
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityReport'
+
+  /api/v2/commodities/top:
+    get:
+      tags:
+        - Commodities
+      summary: Get top 30 commodities
+      description: Returns top 30 commodities ranked by trading activity (market count and total stock)
+      operationId: getTopCommodities
+      responses:
+        '200':
+          description: Top commodities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/CommodityReport'
+                    - type: object
+                      properties:
+                        marketCount:
+                          type: integer
+                          description: Number of markets trading this commodity
+                          example: 1500
+
+  /v2/commodities/top:
+    get:
+      tags:
+        - Commodities
+      summary: Get top 30 commodities (no /api prefix)
+      description: Returns top 30 commodities ranked by trading activity (market count and total stock)
+      operationId: getTopCommoditiesShort
+      responses:
+        '200':
+          description: Top commodities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/CommodityReport'
+                    - type: object
+                      properties:
+                        marketCount:
+                          type: integer
+                          description: Number of markets trading this commodity
+                          example: 1500
+
   /api/v2/commodity/name/{commodityName}:
     get:
       tags:
@@ -320,6 +459,73 @@ paths:
                 $ref: '#/components/schemas/System'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /v2/system/name/{systemName}:
+    get:
+      tags:
+        - Systems
+      summary: Get system information (no /api prefix)
+      description: Returns information about a star system by name
+      operationId: getSystemByNameShort
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+      responses:
+        '200':
+          description: System information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/System'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v2/systems/top:
+    get:
+      tags:
+        - Systems
+      summary: Get top 30 systems
+      description: Returns top 30 systems ranked by permanent station count (excludes Fleet Carriers)
+      operationId: getTopSystems
+      responses:
+        '200':
+          description: Top systems by station count
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/System'
+                    - type: object
+                      properties:
+                        permanentStationCount:
+                          type: integer
+                          description: Number of permanent stations (excludes Fleet Carriers)
+                          example: 25
+
+  /v2/systems/top:
+    get:
+      tags:
+        - Systems
+      summary: Get top 30 systems (no /api prefix)
+      description: Returns top 30 systems ranked by permanent station count (excludes Fleet Carriers)
+      operationId: getTopSystemsShort
+      responses:
+        '200':
+          description: Top systems by station count
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/System'
+                    - type: object
+                      properties:
+                        permanentStationCount:
+                          type: integer
+                          description: Number of permanent stations (excludes Fleet Carriers)
+                          example: 25
 
   /api/v2/system/address/{systemAddress}:
     get:
@@ -595,6 +801,130 @@ paths:
                 items:
                   $ref: '#/components/schemas/System'
 
+  /v2/search/system/name/{searchTerm}:
+    get:
+      tags:
+        - Search
+      summary: Search systems by name (no /api prefix)
+      description: Search for star systems by name (partial match supported)
+      operationId: searchSystemsShort
+      parameters:
+        - name: searchTerm
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "Sol"
+      responses:
+        '200':
+          description: List of matching systems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/System'
+
+  /api/v2/search/station/name/{searchTerm}:
+    get:
+      tags:
+        - Search
+      summary: Search stations by name
+      description: Search for stations by name (partial match supported)
+      operationId: searchStations
+      parameters:
+        - name: searchTerm
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "Jameson"
+      responses:
+        '200':
+          description: List of matching stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+
+  /v2/search/station/name/{searchTerm}:
+    get:
+      tags:
+        - Search
+      summary: Search stations by name (no /api prefix)
+      description: Search for stations by name (partial match supported)
+      operationId: searchStationsShort
+      parameters:
+        - name: searchTerm
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "Jameson"
+      responses:
+        '200':
+          description: List of matching stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+
+  /api/v2/stations/top:
+    get:
+      tags:
+        - Stations
+      summary: Get top 30 stations
+      description: Returns top 30 stations ranked by service count (number of available services)
+      operationId: getTopStations
+      responses:
+        '200':
+          description: Top stations by service count
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Station'
+                    - type: object
+                      properties:
+                        serviceCount:
+                          type: integer
+                          description: Number of services available (max 14)
+                          example: 14
+                      required:
+                        - serviceCount
+
+  /v2/stations/top:
+    get:
+      tags:
+        - Stations
+      summary: Get top 30 stations (no /api prefix)
+      description: Returns top 30 stations ranked by service count (number of available services)
+      operationId: getTopStationsShort
+      responses:
+        '200':
+          description: Top stations by service count
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Station'
+                    - type: object
+                      properties:
+                        serviceCount:
+                          type: integer
+                          description: Number of services available (max 14)
+                          example: 14
+                      required:
+                        - serviceCount
+
 components:
   parameters:
     SystemName:
@@ -742,6 +1072,15 @@ components:
         systemAddress:
           type: integer
           format: int64
+        systemX:
+          type: number
+          format: double
+        systemY:
+          type: number
+          format: double
+        systemZ:
+          type: number
+          format: double
         distanceToArrival:
           type: number
           format: double
@@ -753,6 +1092,77 @@ components:
           type: integer
         bodyName:
           type: string
+        primaryEconomy:
+          type: string
+          example: "HighTech"
+        secondaryEconomy:
+          type: string
+          example: "Industrial"
+        allegiance:
+          type: string
+          example: "Federation"
+        government:
+          type: string
+          example: "Democracy"
+        controllingFaction:
+          type: string
+          example: "Pilots Federation"
+        blackMarket:
+          type: integer
+          enum: [0, 1]
+          description: Has black market (1) or not (0)
+        market:
+          type: integer
+          enum: [0, 1]
+          description: Has commodity market (1) or not (0)
+        refuel:
+          type: integer
+          enum: [0, 1]
+          description: Has refuel service (1) or not (0)
+        repair:
+          type: integer
+          enum: [0, 1]
+          description: Has repair service (1) or not (0)
+        rearm:
+          type: integer
+          enum: [0, 1]
+          description: Has rearm service (1) or not (0)
+        outfitting:
+          type: integer
+          enum: [0, 1]
+          description: Has outfitting (1) or not (0)
+        shipyard:
+          type: integer
+          enum: [0, 1]
+          description: Has shipyard (1) or not (0)
+        crew:
+          type: integer
+          enum: [0, 1]
+          description: Has crew lounge (1) or not (0)
+        engineer:
+          type: integer
+          enum: [0, 1]
+          description: Has engineer (1) or not (0)
+        interstellarFactors:
+          type: integer
+          enum: [0, 1]
+          description: Has interstellar factors (1) or not (0)
+        universalCartographics:
+          type: integer
+          enum: [0, 1]
+          description: Has universal cartographics (1) or not (0)
+        materialTrader:
+          type: integer
+          enum: [0, 1]
+          description: Has material trader (1) or not (0)
+        technologyBroker:
+          type: integer
+          enum: [0, 1]
+          description: Has technology broker (1) or not (0)
+        searchAndRescue:
+          type: integer
+          enum: [0, 1]
+          description: Has search and rescue (1) or not (0)
         updatedAt:
           type: string
           format: date-time

@@ -214,4 +214,37 @@ module.exports = (router) => {
   // Register commodity exports routes (with and without /api prefix)
   router.get('/api/v2/commodity/name/:commodityName/exports', commodityExportsHandler)
   router.get('/v2/commodity/name/:commodityName/exports', commodityExportsHandler)
+
+  // Top 30 commodities by trading volume
+  const topCommoditiesHandler = async (ctx, next) => {
+    try {
+      const { maxDaysAgo = DEFAULT_MAX_RESULTS_AGE } = ctx.query
+
+      const topCommodities = await dbAsync.all(`
+        SELECT 
+          c.commodityName,
+          COUNT(DISTINCT c.marketId) as marketCount,
+          AVG(c.buyPrice) as avgBuyPrice,
+          AVG(c.sellPrice) as avgSellPrice,
+          AVG(c.meanPrice) as avgMeanPrice,
+          SUM(c.stock) as totalStock,
+          SUM(c.demand) as totalDemand,
+          MAX(c.updatedAt) as lastUpdate
+        FROM trade.commodities c
+        WHERE c.updatedAtDay > '${getISODate(`-${maxDaysAgo}`)}'
+        GROUP BY c.commodityName
+        ORDER BY marketCount DESC, totalStock DESC
+        LIMIT 30
+      `)
+
+      ctx.body = topCommodities
+    } catch (error) {
+      console.error('Error fetching top commodities:', error)
+      ctx.status = 500
+      ctx.body = { error: 'Failed to fetch top commodities' }
+    }
+  }
+
+  router.get('/api/v2/commodities/top', topCommoditiesHandler)
+  router.get('/v2/commodities/top', topCommoditiesHandler)
 }
