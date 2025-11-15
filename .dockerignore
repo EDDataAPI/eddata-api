@@ -1,4 +1,4 @@
-# Dockerignore file for ardent-api
+# Dockerignore file for eddata-api
 # Prevents unnecessary files from being copied into the Docker image
 
 # Git

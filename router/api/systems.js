@@ -11,14 +11,22 @@ const {
 } = require('../../lib/consts')
 
 module.exports = (router) => {
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer', async (ctx, next) => {
+  // Helper function to register routes with and without /api prefix
+  const registerRoute = (path, handler) => {
+    router.get(`/api${path}`, handler)
+    router.get(path, handler)
+  }
+
+  // Get system information
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
     ctx.body = system
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/status', async (ctx, next) => {
+  // Get system status from EDSM
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/status', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -26,7 +34,8 @@ module.exports = (router) => {
     ctx.body = systemStatus
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/bodies', async (ctx, next) => {
+  // Get system bodies from EDSM
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/bodies', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -34,7 +43,8 @@ module.exports = (router) => {
     ctx.body = systemBodies
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/markets', async (ctx, next) => {
+  // Get all markets in system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/markets', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -60,7 +70,8 @@ module.exports = (router) => {
     ctx.body = stations
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/stations', async (ctx, next) => {
+  // Get all stations in system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/stations', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -91,7 +102,8 @@ module.exports = (router) => {
     ctx.body = stations
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/stations/ports', async (ctx, next) => {
+  // Get ports (large stations) in system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/stations/ports', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -111,7 +123,8 @@ module.exports = (router) => {
     ctx.body = stations
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/stations/outposts', async (ctx, next) => {
+  // Get outposts in system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/stations/outposts', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -125,7 +138,8 @@ module.exports = (router) => {
     ctx.body = stations
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/stations/settlements', async (ctx, next) => {
+  // Get settlements in system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/stations/settlements', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -139,7 +153,8 @@ module.exports = (router) => {
     ctx.body = stations
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/stations/megaships', async (ctx, next) => {
+  // Get megaships in system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/stations/megaships', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -153,7 +168,8 @@ module.exports = (router) => {
     ctx.body = stations
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/stations/carriers', async (ctx, next) => {
+  // Get fleet carriers in system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/stations/carriers', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -167,9 +183,10 @@ module.exports = (router) => {
     ctx.body = stations
   })
 
+  // Get commodities for a specific station by name
   // Note: If you know the specific Market ID you don't need to specify the
   // system, you can query the `/market/:marketId/commodities` endpoint
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/market/name/:stationName/commodities', async (ctx, next) => {
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/market/name/:stationName/commodities', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer, stationName } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -208,7 +225,8 @@ module.exports = (router) => {
     ctx.body = commodities
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/nearby', async (ctx, next) => {
+  // Get nearby systems
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/nearby', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -238,7 +256,8 @@ module.exports = (router) => {
     })
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/nearest/:serviceType', async (ctx, next) => {
+  // Get nearest system with specific service
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/nearest/:serviceType', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer, serviceType } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')

@@ -13,7 +13,14 @@ const {
 const { getSystem } = require('../../../lib/utils/get-system')
 
 module.exports = (router) => {
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/commodity/name/:commodityName', async (ctx, next) => {
+  // Helper function to register routes with and without /api prefix
+  const registerRoute = (path, handler) => {
+    router.get(`/api${path}`, handler)
+    router.get(path, handler)
+  }
+
+  // Get specific commodity in a system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/commodity/name/:commodityName', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer, commodityName } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -55,7 +62,8 @@ module.exports = (router) => {
     ctx.body = commodities
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/commodity/name/:commodityName/nearby/imports', async (ctx, next) => {
+  // Find nearby systems importing a specific commodity
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/commodity/name/:commodityName/nearby/imports', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer, commodityName } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -129,7 +137,8 @@ module.exports = (router) => {
     ctx.body = commodities
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/commodity/name/:commodityName/nearby/exports', async (ctx, next) => {
+  // Find nearby systems exporting a specific commodity
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/commodity/name/:commodityName/nearby/exports', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer, commodityName } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')

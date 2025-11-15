@@ -1,0 +1,29 @@
+{
+  "cSpell.words": [
+    "AGPL",
+    "Auth",
+    "bodyparser",
+    "commodityName",
+    "EDCD",
+    "EDData",
+    "EDDataAPI",
+    "EDDN",
+    "eddata",
+    "EDSM",
+    "filterd",
+    "Koa",
+    "SQLite",
+    "systemAddress",
+    "systemName",
+    "versioned"
+  ],
+  "markdownlint.config": {
+    "MD004": {
+      "style": "dash"
+    },
+    "MD013": false,
+    "MD034": false,
+    "MD036": false,
+    "MD041": false
+  }
+}

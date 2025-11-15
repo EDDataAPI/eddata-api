@@ -27,9 +27,9 @@ The EDData API provides REST API access to Elite Dangerous data collected from t
 
 ### 🔗 Related Repositories
 
-* [EDData Collector](https://github.com/EDDataAPI/eddata-collector) - Data collection from EDDN
-* [EDData Web](https://github.com/EDDataAPI/eddata-web) - Web interface
-* [EDData Auth](https://github.com/EDDataAPI/eddata-auth) - Authentication service
+- [EDData Collector](https://github.com/EDDataAPI/eddata-collector) - Data collection from EDDN
+- [EDData Web](https://github.com/EDDataAPI/eddata-web) - Web interface
+- [EDData Auth](https://github.com/EDDataAPI/eddata-auth) - Authentication service
 
 ## 🛠️ Installation
 

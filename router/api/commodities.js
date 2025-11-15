@@ -12,6 +12,7 @@ const MAX_COMMODITY_SORTED_RESULTS = 100
 const MAX_COMMODITY_SEARCH_DISTANCE = 1000
 
 module.exports = (router) => {
+  // Get all commodities (with and without /api prefix)
   router.get('/api/v2/commodities', async (ctx, next) => {
     try {
       ctx.body = JSON.parse(fs.readFileSync(COMMODITIES_REPORT)).commodities
@@ -20,7 +21,16 @@ module.exports = (router) => {
       ctx.body = null
     }
   })
+  router.get('/v2/commodities', async (ctx, next) => {
+    try {
+      ctx.body = JSON.parse(fs.readFileSync(COMMODITIES_REPORT)).commodities
+    } catch (e) {
+      console.error(e)
+      ctx.body = null
+    }
+  })
 
+  // Get specific commodity by name (with and without /api prefix)
   router.get('/api/v2/commodity/name/:commodityName', async (ctx, next) => {
     let { commodityName } = ctx.params
     commodityName = commodityName.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, '')
@@ -28,8 +38,16 @@ module.exports = (router) => {
     if (!fs.existsSync(pathToFile)) return NotFoundResponse(ctx, 'Commodity not found')
     ctx.body = JSON.parse(fs.readFileSync(pathToFile))
   })
+  router.get('/v2/commodity/name/:commodityName', async (ctx, next) => {
+    let { commodityName } = ctx.params
+    commodityName = commodityName.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, '')
+    const pathToFile = path.join(EDDATA_CACHE_DIR, 'commodities', `${commodityName}`, `${commodityName}.json`)
+    if (!fs.existsSync(pathToFile)) return NotFoundResponse(ctx, 'Commodity not found')
+    ctx.body = JSON.parse(fs.readFileSync(pathToFile))
+  })
 
-  router.get('/api/v2/commodity/name/:commodityName/imports', async (ctx, next) => {
+  // Commodity imports handler (shared logic for both routes)
+  const commodityImportsHandler = async (ctx, next) => {
     const { commodityName } = ctx.params
     let {
       minVolume = 1,
@@ -106,9 +124,14 @@ module.exports = (router) => {
           LIMIT ${MAX_COMMODITY_SORTED_RESULTS}`, sqlQueryParams)
 
     ctx.body = commodities
-  })
+  }
 
-  router.get('/api/v2/commodity/name/:commodityName/exports', async (ctx, next) => {
+  // Register commodity imports routes (with and without /api prefix)
+  router.get('/api/v2/commodity/name/:commodityName/imports', commodityImportsHandler)
+  router.get('/v2/commodity/name/:commodityName/imports', commodityImportsHandler)
+
+  // Commodity exports handler (shared logic for both routes)
+  const commodityExportsHandler = async (ctx, next) => {
     const { commodityName } = ctx.params
     let {
       minVolume = 1,
@@ -186,5 +209,9 @@ module.exports = (router) => {
           LIMIT ${MAX_COMMODITY_SORTED_RESULTS}`, sqlQueryParams)
 
     ctx.body = commodities
-  })
+  }
+
+  // Register commodity exports routes (with and without /api prefix)
+  router.get('/api/v2/commodity/name/:commodityName/exports', commodityExportsHandler)
+  router.get('/v2/commodity/name/:commodityName/exports', commodityExportsHandler)
 }

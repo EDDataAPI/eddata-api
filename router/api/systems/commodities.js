@@ -6,7 +6,14 @@ const { DEFAULT_MAX_RESULTS_AGE } = require('../../../lib/consts')
 const { getSystem } = require('../../../lib/utils/get-system')
 
 module.exports = (router) => {
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/commodities', async (ctx, next) => {
+  // Helper function to register routes with and without /api prefix
+  const registerRoute = (path, handler) => {
+    router.get(`/api${path}`, handler)
+    router.get(path, handler)
+  }
+
+  // Get all commodities in a system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/commodities', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -42,7 +49,8 @@ module.exports = (router) => {
     ctx.body = commodities
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/commodities/imports', async (ctx, next) => {
+  // Get imported commodities in a system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/commodities/imports', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
@@ -97,7 +105,8 @@ module.exports = (router) => {
     ctx.body = commodities || 'No imported commodities'
   })
 
-  router.get('/api/v2/system/:systemIdentiferType/:systemIdentifer/commodities/exports', async (ctx, next) => {
+  // Get exported commodities in a system
+  registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/commodities/exports', async (ctx, next) => {
     const { systemIdentiferType, systemIdentifer } = ctx.params
     const system = await getSystem(systemIdentifer, systemIdentiferType)
     if (!system) return NotFoundResponse(ctx, 'System not found')
