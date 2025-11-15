@@ -1,0 +1,872 @@
+openapi: 3.0.3
+info:
+  title: EDData API
+  description: |
+    REST API providing access to Elite Dangerous data collected from the Elite Dangerous Data Network (EDDN).
+    
+    The API provides comprehensive data about:
+    - Over 150 million star systems with detailed location data
+    - Millions of trade orders for commodities and markets
+    - Hundreds of thousands of stations, ports, and fleet carriers
+    - Real-time updates from the Elite Dangerous community
+    
+    **Related Services:**
+    - [EDData Collector](https://github.com/EDDataAPI/eddata-collector) - Data collection from EDDN
+    - [EDData Web](https://github.com/EDDataAPI/eddata-web) - Web interface
+    - [EDData Auth](https://github.com/EDDataAPI/eddata-auth) - Authentication service
+  version: 1.0.0
+  contact:
+    name: EDData API Support
+    url: https://github.com/EDDataAPI/eddata-api
+  license:
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0
+
+servers:
+  - url: https://api.eddata.app
+    description: Production API
+  - url: http://localhost:3001
+    description: Local development
+
+tags:
+  - name: General
+    description: API information and statistics
+  - name: News
+    description: Galnet news and market ticker
+  - name: Commodities
+    description: Commodity trading data and reports
+  - name: Systems
+    description: Star system information and nearby searches
+  - name: Markets
+    description: Market and station trading data
+  - name: Search
+    description: Search functionality
+
+paths:
+  /api/v2/version:
+    get:
+      tags:
+        - General
+      summary: Get API version
+      description: Returns the current version of the EDData API software
+      operationId: getVersion
+      responses:
+        '200':
+          description: API version information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: "1.0.0"
+
+  /api/v2/stats:
+    get:
+      tags:
+        - General
+      summary: Get database statistics
+      description: Returns comprehensive statistics about the databases (updated every 15 minutes by collector)
+      operationId: getStats
+      responses:
+        '200':
+          description: Database statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  systems:
+                    type: integer
+                    example: 102694411
+                  pointsOfInterest:
+                    type: integer
+                    example: 1500000
+                  stations:
+                    type: object
+                    properties:
+                      stations:
+                        type: integer
+                        example: 42695
+                      carriers:
+                        type: integer
+                        example: 5360
+                      updatedInLast24Hours:
+                        type: integer
+                        example: 563215
+                  trade:
+                    type: object
+                    properties:
+                      markets:
+                        type: integer
+                        example: 16419
+                      orders:
+                        type: integer
+                        example: 10773236
+                      updatedInLast24Hours:
+                        type: integer
+                        example: 563215
+                      uniqueCommodities:
+                        type: integer
+                        example: 150
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-14T12:00:00Z"
+
+  /api/v2/stats/stations/types:
+    get:
+      tags:
+        - General
+      summary: Get station types statistics
+      description: Returns breakdown of station types and their counts
+      operationId: getStationTypes
+      responses:
+        '200':
+          description: Station types statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stationTypes:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                    example:
+                      Coriolis: 5000
+                      Orbis: 3000
+                      Outpost: 10000
+                  total:
+                    type: integer
+                    example: 42695
+
+  /api/v2/stats/stations/economies:
+    get:
+      tags:
+        - General
+      summary: Get station economies statistics
+      description: Returns breakdown of station economies and their counts
+      operationId: getStationEconomies
+      responses:
+        '200':
+          description: Station economies statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  economies:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                  total:
+                    type: integer
+
+  /api/v2/news/galnet:
+    get:
+      tags:
+        - News
+      summary: Get Galnet news
+      description: Returns the latest Galnet news articles from Elite Dangerous
+      operationId: getGalnetNews
+      responses:
+        '200':
+          description: Galnet news articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    published:
+                      type: string
+                      format: date-time
+                    date:
+                      type: string
+                    title:
+                      type: string
+                    text:
+                      type: string
+                    slug:
+                      type: string
+                    image:
+                      type: string
+                      format: uri
+                    url:
+                      type: string
+                      format: uri
+
+  /api/v2/news/commodities:
+    get:
+      tags:
+        - News
+      summary: Get commodity market ticker
+      description: Returns recent commodity market updates
+      operationId: getCommodityTicker
+      responses:
+        '200':
+          description: Commodity market ticker data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+
+  /api/v2/commodities:
+    get:
+      tags:
+        - Commodities
+      summary: Get commodities report
+      description: Returns all known traded commodities with price ranges and supply/demand totals (excludes Fleet Carriers, updated daily)
+      operationId: getCommodities
+      responses:
+        '200':
+          description: Commodities report
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityReport'
+
+  /api/v2/commodity/name/{commodityName}:
+    get:
+      tags:
+        - Commodities
+      summary: Get commodity information
+      description: Returns summary report for a specific commodity
+      operationId: getCommodity
+      parameters:
+        - $ref: '#/components/parameters/CommodityName'
+      responses:
+        '200':
+          description: Commodity information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommodityReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v2/commodity/name/{commodityName}/imports:
+    get:
+      tags:
+        - Commodities
+      summary: Get commodity importers
+      description: Returns places importing a commodity (where you can sell), ordered by highest price. Returns best 100 matching results.
+      operationId: getCommodityImporters
+      parameters:
+        - $ref: '#/components/parameters/CommodityName'
+        - $ref: '#/components/parameters/MinVolume'
+        - $ref: '#/components/parameters/MinPrice'
+        - $ref: '#/components/parameters/FleetCarriers'
+        - $ref: '#/components/parameters/MaxDaysAgo'
+      responses:
+        '200':
+          description: List of importers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v2/commodity/name/{commodityName}/exports:
+    get:
+      tags:
+        - Commodities
+      summary: Get commodity exporters
+      description: Returns places exporting a commodity (where you can buy), ordered by lowest price. Returns best 100 matching results.
+      operationId: getCommodityExporters
+      parameters:
+        - $ref: '#/components/parameters/CommodityName'
+        - $ref: '#/components/parameters/MinVolume'
+        - $ref: '#/components/parameters/MaxPrice'
+        - $ref: '#/components/parameters/FleetCarriers'
+        - $ref: '#/components/parameters/MaxDaysAgo'
+      responses:
+        '200':
+          description: List of exporters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v2/system/name/{systemName}:
+    get:
+      tags:
+        - Systems
+      summary: Get system information
+      description: Returns information about a star system by name
+      operationId: getSystemByName
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+      responses:
+        '200':
+          description: System information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/System'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v2/system/address/{systemAddress}:
+    get:
+      tags:
+        - Systems
+      summary: Get system information by address
+      description: Returns information about a star system by system address (for disambiguation)
+      operationId: getSystemByAddress
+      parameters:
+        - $ref: '#/components/parameters/SystemAddress'
+      responses:
+        '200':
+          description: System information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/System'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v2/system/name/{systemName}/nearby:
+    get:
+      tags:
+        - Systems
+      summary: Get nearby systems
+      description: Returns up to 1000 nearby systems, ordered by distance
+      operationId: getNearbySystems
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+        - $ref: '#/components/parameters/MaxDistance'
+      responses:
+        '200':
+          description: List of nearby systems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NearbySystem'
+
+  /api/v2/system/name/{systemName}/nearest/{service}:
+    get:
+      tags:
+        - Systems
+      summary: Get nearest station with service
+      description: |
+        Find the nearest station providing a specific service. Returns 20 nearest matching stations.
+        
+        Available services:
+        - interstellar-factors
+        - material-trader
+        - technology-broker
+        - black-market
+        - universal-cartographics
+        - refuel
+        - repair
+        - shipyard
+        - outfitting
+        - search-and-rescue
+      operationId: getNearestService
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+        - name: service
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - interstellar-factors
+              - material-trader
+              - technology-broker
+              - black-market
+              - universal-cartographics
+              - refuel
+              - repair
+              - shipyard
+              - outfitting
+              - search-and-rescue
+        - $ref: '#/components/parameters/MinLandingPadSize'
+      responses:
+        '200':
+          description: List of stations with the service
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+
+  /api/v2/system/name/{systemName}/commodities:
+    get:
+      tags:
+        - Systems
+      summary: Get system commodities
+      description: Returns all known trade orders in a system
+      operationId: getSystemCommodities
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+      responses:
+        '200':
+          description: List of commodity orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+
+  /api/v2/system/name/{systemName}/commodities/imports:
+    get:
+      tags:
+        - Systems
+      summary: Get system commodity imports
+      description: Returns commodities imported by a system (where you can sell)
+      operationId: getSystemImports
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+        - $ref: '#/components/parameters/MinVolume'
+        - $ref: '#/components/parameters/MinPrice'
+        - $ref: '#/components/parameters/FleetCarriers'
+        - $ref: '#/components/parameters/MaxDaysAgo'
+      responses:
+        '200':
+          description: List of imports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+
+  /api/v2/system/name/{systemName}/commodities/exports:
+    get:
+      tags:
+        - Systems
+      summary: Get system commodity exports
+      description: Returns commodities exported by a system (where you can buy)
+      operationId: getSystemExports
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+        - $ref: '#/components/parameters/MinVolume'
+        - $ref: '#/components/parameters/MaxPrice'
+        - $ref: '#/components/parameters/FleetCarriers'
+        - $ref: '#/components/parameters/MaxDaysAgo'
+      responses:
+        '200':
+          description: List of exports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+
+  /api/v2/system/name/{systemName}/commodity/name/{commodityName}:
+    get:
+      tags:
+        - Systems
+      summary: Get commodity trade data in system
+      description: Returns all buy/sell orders for a commodity in a specific system
+      operationId: getSystemCommodity
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+        - $ref: '#/components/parameters/CommodityName'
+        - $ref: '#/components/parameters/MaxDaysAgo'
+      responses:
+        '200':
+          description: Commodity orders in system
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+
+  /api/v2/system/name/{systemName}/commodity/name/{commodityName}/nearby/imports:
+    get:
+      tags:
+        - Systems
+      summary: Get nearby commodity importers
+      description: Returns nearby places importing a commodity, ordered by highest price. First 1000 results.
+      operationId: getNearbyCommodityImporters
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+        - $ref: '#/components/parameters/CommodityName'
+        - $ref: '#/components/parameters/MinVolume'
+        - $ref: '#/components/parameters/MinPrice'
+        - $ref: '#/components/parameters/FleetCarriers'
+        - $ref: '#/components/parameters/MaxDistance'
+        - $ref: '#/components/parameters/MaxDaysAgo'
+      responses:
+        '200':
+          description: List of nearby importers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+
+  /api/v2/system/name/{systemName}/commodity/name/{commodityName}/nearby/exports:
+    get:
+      tags:
+        - Systems
+      summary: Get nearby commodity exporters
+      description: Returns nearby places exporting a commodity, ordered by lowest price. First 1000 results.
+      operationId: getNearbyCommodityExporters
+      parameters:
+        - $ref: '#/components/parameters/SystemName'
+        - $ref: '#/components/parameters/CommodityName'
+        - $ref: '#/components/parameters/MinVolume'
+        - $ref: '#/components/parameters/MaxPrice'
+        - $ref: '#/components/parameters/FleetCarriers'
+        - $ref: '#/components/parameters/MaxDistance'
+        - $ref: '#/components/parameters/MaxDaysAgo'
+      responses:
+        '200':
+          description: List of nearby exporters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+
+  /api/v2/market/{marketId}/commodity/name/{commodityName}:
+    get:
+      tags:
+        - Markets
+      summary: Get commodity data for specific market
+      description: Returns commodity information for a specific market (useful for rare goods)
+      operationId: getMarketCommodity
+      parameters:
+        - name: marketId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 128106744
+        - $ref: '#/components/parameters/CommodityName'
+      responses:
+        '200':
+          description: Commodity data for market
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommodityOrder'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v2/search/system/name/{searchTerm}:
+    get:
+      tags:
+        - Search
+      summary: Search systems by name
+      description: Search for star systems by name (partial match supported)
+      operationId: searchSystems
+      parameters:
+        - name: searchTerm
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "Sol"
+      responses:
+        '200':
+          description: List of matching systems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/System'
+
+components:
+  parameters:
+    SystemName:
+      name: systemName
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "Sol"
+      description: Name of the star system (URL encoded for special characters)
+
+    SystemAddress:
+      name: systemAddress
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      example: 10477373803
+      description: System address for disambiguation
+
+    CommodityName:
+      name: commodityName
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "gold"
+      description: Commodity name (lowercase, no special characters)
+
+    MinVolume:
+      name: minVolume
+      in: query
+      schema:
+        type: integer
+        default: 1
+      description: Minimum volume/stock
+
+    MinPrice:
+      name: minPrice
+      in: query
+      schema:
+        type: integer
+        default: 1
+      description: Minimum price for imports
+
+    MaxPrice:
+      name: maxPrice
+      in: query
+      schema:
+        type: integer
+      description: Maximum price for exports
+
+    FleetCarriers:
+      name: fleetCarriers
+      in: query
+      schema:
+        type: boolean
+      description: |
+        Filter by fleet carriers:
+        - true: Only fleet carriers
+        - false: Exclude fleet carriers
+        - null/omitted: Include all
+
+    MaxDaysAgo:
+      name: maxDaysAgo
+      in: query
+      schema:
+        type: integer
+        default: 30
+        maximum: 90
+      description: Maximum age of data in days
+
+    MaxDistance:
+      name: maxDistance
+      in: query
+      schema:
+        type: integer
+        default: 100
+        maximum: 500
+      description: Maximum distance in light years
+
+    MinLandingPadSize:
+      name: minLandingPadSize
+      in: query
+      schema:
+        type: integer
+        enum: [1, 2, 3]
+        default: 1
+      description: |
+        Minimum landing pad size:
+        - 1: Small
+        - 2: Medium
+        - 3: Large
+
+  schemas:
+    System:
+      type: object
+      properties:
+        systemName:
+          type: string
+          example: "Sol"
+        systemAddress:
+          type: integer
+          format: int64
+          example: 10477373803
+        systemX:
+          type: number
+          format: double
+          example: 0.0
+        systemY:
+          type: number
+          format: double
+          example: 0.0
+        systemZ:
+          type: number
+          format: double
+          example: 0.0
+        updatedAt:
+          type: string
+          format: date-time
+
+    NearbySystem:
+      allOf:
+        - $ref: '#/components/schemas/System'
+        - type: object
+          properties:
+            distance:
+              type: number
+              format: double
+              description: Distance in light years
+
+    Station:
+      type: object
+      properties:
+        stationName:
+          type: string
+        stationType:
+          type: string
+        marketId:
+          type: integer
+          format: int64
+        systemName:
+          type: string
+        systemAddress:
+          type: integer
+          format: int64
+        distanceToArrival:
+          type: number
+          format: double
+          description: Distance from main star in light seconds
+        maxLandingPadSize:
+          type: string
+          enum: [S, M, L]
+        bodyId:
+          type: integer
+        bodyName:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+
+    CommodityReport:
+      type: object
+      properties:
+        commodityName:
+          type: string
+          example: "gold"
+        maxBuyPrice:
+          type: integer
+          example: 59797
+        minBuyPrice:
+          type: integer
+          example: 3979
+        avgBuyPrice:
+          type: integer
+          example: 44441
+        totalStock:
+          type: integer
+          format: int64
+          example: 73016533
+        maxSellPrice:
+          type: integer
+          example: 70761
+        minSellPrice:
+          type: integer
+          example: 3978
+        avgSellPrice:
+          type: integer
+          example: 48259
+        totalDemand:
+          type: integer
+          format: int64
+          example: 1899662825
+
+    CommodityOrder:
+      type: object
+      properties:
+        commodityName:
+          type: string
+        marketId:
+          type: integer
+          format: int64
+        stationName:
+          type: string
+        stationType:
+          type: string
+        distanceToArrival:
+          type: number
+          format: double
+        maxLandingPadSize:
+          type: string
+          enum: [S, M, L]
+        bodyId:
+          type: integer
+        bodyName:
+          type: string
+        systemAddress:
+          type: integer
+          format: int64
+        systemName:
+          type: string
+        systemX:
+          type: number
+          format: double
+        systemY:
+          type: number
+          format: double
+        systemZ:
+          type: number
+          format: double
+        buyPrice:
+          type: integer
+        demand:
+          type: integer
+        demandBracket:
+          type: integer
+          minimum: 0
+          maximum: 3
+        meanPrice:
+          type: integer
+        sellPrice:
+          type: integer
+        stock:
+          type: integer
+        stockBracket:
+          type: integer
+          minimum: 0
+          maximum: 3
+        updatedAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Not Found"
+            message: "The requested resource was not found"
+
+  securitySchemes: {}
+
+security: []
