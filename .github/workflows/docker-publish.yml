@@ -48,10 +48,25 @@ jobs:
     outputs:
       image: ${{ steps.image.outputs.image }}
       digest: ${{ steps.build.outputs.digest }}
+      version: ${{ steps.version.outputs.version }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for semantic versioning
+
+    - name: Semantic Version
+      id: version
+      uses: paulhatch/semantic-version@v5.4.0
+      with:
+        tag_prefix: "v"
+        major_pattern: "(MAJOR)"
+        minor_pattern: "(MINOR)"
+        version_format: "${major}.${minor}.${patch}"
+        bump_each_commit: true
+        search_commit_body: true
+        user_format_type: "csv"
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3.8.0
@@ -69,13 +84,16 @@ jobs:
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
+          type=raw,value=${{ steps.version.outputs.version }}
+          type=raw,value=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}
+          type=raw,value=${{ steps.version.outputs.major }}
           type=ref,event=branch
-          type=ref,event=pr
           type=sha,prefix={{branch}}-
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=semver,pattern={{major}}
           type=raw,value=latest,enable={{is_default_branch}}
+        labels: |
+          org.opencontainers.image.version=${{ steps.version.outputs.version }}
+          org.opencontainers.image.title=EDData API
+          org.opencontainers.image.description=REST API for Elite Dangerous data
 
     - name: Build and push Docker image
       id: build
@@ -90,7 +108,7 @@ jobs:
         build-args: |
           BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           VCS_REF=${{ github.sha }}
-          VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          VERSION=${{ steps.version.outputs.version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
         platforms: linux/amd64,linux/arm64
