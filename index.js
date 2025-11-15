@@ -41,6 +41,7 @@ const fsPromises = require('fs/promises')
 const Koa = require('koa')
 const koaBodyParser = require('koa-bodyparser')
 const koaCompress = require('koa-compress')
+const koaCors = require('@koa/cors')
 
 console.log('Loading libraries …')
 const router = require('./router')
@@ -52,6 +53,32 @@ const router = require('./router')
   app.use(koaBodyParser())
   app.proxy = true // Proxy headers should be passed through
 
+  // CORS configuration - allow requests from eddata.dev domains
+  app.use(koaCors({
+    origin: (ctx) => {
+      const allowedOrigins = [
+        'https://eddata.dev',
+        'https://www.eddata.dev',
+        'https://auth.eddata.dev',
+        'http://localhost:3000',
+        'http://localhost:3001'
+      ]
+      const origin = ctx.request.header.origin
+      if (!origin || allowedOrigins.includes(origin)) {
+        return origin || '*'
+      }
+      // Allow any eddata.dev subdomain
+      if (origin && origin.match(/^https?:\/\/[a-z0-9-]+\.eddata\.dev$/)) {
+        return origin
+      }
+      return allowedOrigins[0]
+    },
+    credentials: true,
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+    maxAge: 86400 // 24 hours
+  }))
+
   // Set default headers
   app.use((ctx, next) => {
     ctx.set('EDData-API-Version', `${Package.version}`)
@@ -59,12 +86,6 @@ const router = require('./router')
     // Cache headers encourage caching, but with a short period (and use of state-while-revalidate)
     ctx.set('Cache-Control', EDDATA_API_DEFAULT_CACHE_CONTROL)
 
-    // Headers required to support requests with credentials (i.e. auth tokens)
-    // while still supporting API requests from any domain
-    ctx.set('Access-Control-Allow-Origin', ctx.request.header.origin)
-    ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-    ctx.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    ctx.set('Vary', 'Origin')
     return next()
   })
 

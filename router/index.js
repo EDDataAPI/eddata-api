@@ -33,7 +33,8 @@ router.get('/v2/version', (ctx, next) => {
   ctx.body = { version: Package.version }
 })
 
-router.get('/api/v2/stats', async (ctx, next) => {
+// Stats endpoint (with and without /api prefix)
+const statsHandler = async (ctx, next) => {
   try {
     const statsPath = path.join(EDDATA_CACHE_DIR, 'database-stats.json')
     const data = await fsPromises.readFile(statsPath, 'utf8')
@@ -52,7 +53,10 @@ router.get('/api/v2/stats', async (ctx, next) => {
       ctx.body = { error: 'Failed to read statistics' }
     }
   }
-})
+}
+
+router.get('/api/v2/stats', statsHandler)
+router.get('/v2/stats', statsHandler)
 
 router.get('/api/v2/stats/stations/types', async (ctx, next) => {
   const stationTypes = await dbAsync.all(`
