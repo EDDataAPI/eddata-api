@@ -1175,6 +1175,10 @@ components:
           type: integer
           enum: [0, 1]
           description: Has mission board (1) or not (0)
+        engineer:
+          type: integer
+          enum: [0, 1]
+          description: Has engineer services (1) or not (0)
         frontlineSolutions:
           type: integer
           enum: [0, 1]

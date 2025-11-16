@@ -439,7 +439,7 @@ Returns top 30 stations ranked by service count (number of available services).
     "allegiance": "Pilots Federation",
     "government": "Democracy",
     "controllingFaction": "The Pilots Federation",
-    "serviceCount": 20,
+    "serviceCount": 21,
     "blackMarket": 1,
     "shipyard": 1,
     "outfitting": 1,
@@ -453,12 +453,13 @@ Returns top 30 stations ranked by service count (number of available services).
     "materialTrader": 1,
     "technologyBroker": 1,
     "searchAndRescue": 1,
-    "tuning": 1,
+    "tuning": 0,
     "missions": 1,
-    "frontlineSolutions": 1,
+    "engineer": 0,
+    "frontlineSolutions": 0,
     "apexInterstellar": 1,
-    "vistaGenomics": 1,
-    "pioneerSupplies": 1,
+    "vistaGenomics": 0,
+    "pioneerSupplies": 0,
     "bartender": 1,
     "updatedAt": "2025-11-15T10:00:00Z"
   }
@@ -467,7 +468,7 @@ Returns top 30 stations ranked by service count (number of available services).
 
 **Notes:**
 - Excludes Fleet Carriers
-- Services counted: blackMarket, shipyard, outfitting, refuel, repair, restock, contacts, crewLounge, interstellarFactors, universalCartographics, materialTrader, technologyBroker, searchAndRescue, tuning, missions, frontlineSolutions, apexInterstellar, vistaGenomics, pioneerSupplies, bartender (20 total)
+- Services counted: blackMarket, shipyard, outfitting, refuel, repair, restock, contacts, crewLounge, interstellarFactors, universalCartographics, materialTrader, technologyBroker, searchAndRescue, tuning, missions, engineer, frontlineSolutions, apexInterstellar, vistaGenomics, pioneerSupplies, bartender (21 total)
 - Sorted by service count descending, then by landing pad size descending
 
 ---
@@ -583,6 +584,7 @@ Search for stations by name (partial match supported).
   "searchAndRescue": 1,
   "tuning": 0,
   "missions": 1,
+  "engineer": 0,
   "frontlineSolutions": 0,
   "apexInterstellar": 1,
   "vistaGenomics": 0,

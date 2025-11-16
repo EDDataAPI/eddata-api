@@ -41,6 +41,7 @@ module.exports = (router) => {
             CASE WHEN s.searchAndRescue = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.tuning = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.missions = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.engineer = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.frontlineSolutions = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.apexInterstellar = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.vistaGenomics = 1 THEN 1 ELSE 0 END +
@@ -62,6 +63,7 @@ module.exports = (router) => {
           s.searchAndRescue,
           s.tuning,
           s.missions,
+          s.engineer,
           s.frontlineSolutions,
           s.apexInterstellar,
           s.vistaGenomics,
