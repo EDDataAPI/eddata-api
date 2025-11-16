@@ -21,36 +21,53 @@ module.exports = (router) => {
           s.allegiance,
           s.government,
           s.controllingFaction,
+          s.bodyId,
+          s.bodyName,
+          s.latitude,
+          s.longitude,
           (
             CASE WHEN s.blackMarket = 1 THEN 1 ELSE 0 END +
-            CASE WHEN s.market = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.shipyard = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.outfitting = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.refuel = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.repair = 1 THEN 1 ELSE 0 END +
-            CASE WHEN s.rearm = 1 THEN 1 ELSE 0 END +
-            CASE WHEN s.outfitting = 1 THEN 1 ELSE 0 END +
-            CASE WHEN s.shipyard = 1 THEN 1 ELSE 0 END +
-            CASE WHEN s.crew = 1 THEN 1 ELSE 0 END +
-            CASE WHEN s.engineer = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.restock = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.contacts = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.crewLounge = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.interstellarFactors = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.universalCartographics = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.materialTrader = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.technologyBroker = 1 THEN 1 ELSE 0 END +
-            CASE WHEN s.searchAndRescue = 1 THEN 1 ELSE 0 END
+            CASE WHEN s.searchAndRescue = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.tuning = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.missions = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.frontlineSolutions = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.apexInterstellar = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.vistaGenomics = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.pioneerSupplies = 1 THEN 1 ELSE 0 END +
+            CASE WHEN s.bartender = 1 THEN 1 ELSE 0 END
           ) as serviceCount,
           s.blackMarket,
-          s.market,
+          s.shipyard,
+          s.outfitting,
           s.refuel,
           s.repair,
-          s.rearm,
-          s.outfitting,
-          s.shipyard,
-          s.crew,
-          s.engineer,
+          s.restock,
+          s.contacts,
+          s.crewLounge,
           s.interstellarFactors,
           s.universalCartographics,
           s.materialTrader,
           s.technologyBroker,
-          s.searchAndRescue
+          s.searchAndRescue,
+          s.tuning,
+          s.missions,
+          s.frontlineSolutions,
+          s.apexInterstellar,
+          s.vistaGenomics,
+          s.pioneerSupplies,
+          s.bartender,
+          s.updatedAt
         FROM stations.stations s
         WHERE s.stationType != 'FleetCarrier'
           AND s.stationType IS NOT NULL

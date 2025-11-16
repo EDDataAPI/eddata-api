@@ -878,7 +878,7 @@ paths:
       tags:
         - Stations
       summary: Get top 30 stations
-      description: Returns top 30 stations ranked by service count (number of available services)
+      description: Returns top 30 stations ranked by service count (number of available services - 20 possible services)
       operationId: getTopStations
       responses:
         '200':
@@ -894,8 +894,8 @@ paths:
                       properties:
                         serviceCount:
                           type: integer
-                          description: Number of services available (max 14)
-                          example: 14
+                          description: Number of services available (max 20)
+                          example: 20
                       required:
                         - serviceCount
 
@@ -904,7 +904,7 @@ paths:
       tags:
         - Stations
       summary: Get top 30 stations (no /api prefix)
-      description: Returns top 30 stations ranked by service count (number of available services)
+      description: Returns top 30 stations ranked by service count (number of available services - 20 possible services)
       operationId: getTopStationsShort
       responses:
         '200':
@@ -920,8 +920,8 @@ paths:
                       properties:
                         serviceCount:
                           type: integer
-                          description: Number of services available (max 14)
-                          example: 14
+                          description: Number of services available (max 20)
+                          example: 20
                       required:
                         - serviceCount
 
@@ -1092,6 +1092,14 @@ components:
           type: integer
         bodyName:
           type: string
+        latitude:
+          type: number
+          format: double
+          description: Latitude coordinates on planetary body
+        longitude:
+          type: number
+          format: double
+          description: Longitude coordinates on planetary body
         primaryEconomy:
           type: string
           example: "HighTech"
@@ -1111,10 +1119,14 @@ components:
           type: integer
           enum: [0, 1]
           description: Has black market (1) or not (0)
-        market:
+        shipyard:
           type: integer
           enum: [0, 1]
-          description: Has commodity market (1) or not (0)
+          description: Has shipyard (1) or not (0)
+        outfitting:
+          type: integer
+          enum: [0, 1]
+          description: Has outfitting (1) or not (0)
         refuel:
           type: integer
           enum: [0, 1]
@@ -1123,26 +1135,18 @@ components:
           type: integer
           enum: [0, 1]
           description: Has repair service (1) or not (0)
-        rearm:
+        restock:
           type: integer
           enum: [0, 1]
-          description: Has rearm service (1) or not (0)
-        outfitting:
+          description: Has restock/rearm service (1) or not (0)
+        contacts:
           type: integer
           enum: [0, 1]
-          description: Has outfitting (1) or not (0)
-        shipyard:
-          type: integer
-          enum: [0, 1]
-          description: Has shipyard (1) or not (0)
-        crew:
+          description: Has contact services (1) or not (0)
+        crewLounge:
           type: integer
           enum: [0, 1]
           description: Has crew lounge (1) or not (0)
-        engineer:
-          type: integer
-          enum: [0, 1]
-          description: Has engineer (1) or not (0)
         interstellarFactors:
           type: integer
           enum: [0, 1]
@@ -1163,6 +1167,34 @@ components:
           type: integer
           enum: [0, 1]
           description: Has search and rescue (1) or not (0)
+        tuning:
+          type: integer
+          enum: [0, 1]
+          description: Has tuning services (1) or not (0)
+        missions:
+          type: integer
+          enum: [0, 1]
+          description: Has mission board (1) or not (0)
+        frontlineSolutions:
+          type: integer
+          enum: [0, 1]
+          description: Has Frontline Solutions (1) or not (0)
+        apexInterstellar:
+          type: integer
+          enum: [0, 1]
+          description: Has Apex Interstellar (1) or not (0)
+        vistaGenomics:
+          type: integer
+          enum: [0, 1]
+          description: Has Vista Genomics (1) or not (0)
+        pioneerSupplies:
+          type: integer
+          enum: [0, 1]
+          description: Has Pioneer Supplies (1) or not (0)
+        bartender:
+          type: integer
+          enum: [0, 1]
+          description: Has bartender (1) or not (0)
         updatedAt:
           type: string
           format: date-time
