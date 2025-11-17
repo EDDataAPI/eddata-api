@@ -69,7 +69,14 @@ module.exports = (router) => {
       return null
     }
     const stations = await dbAsync.all('SELECT * FROM stations.stations WHERE stationType IS NOT NULL AND stationName LIKE @stationName LIMIT 25', { stationName: `${stationName}%` })
-    ctx.body = stations
+
+    // Parse prohibited field from JSON string to array
+    const parsedStations = stations.map(station => ({
+      ...station,
+      prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+    }))
+
+    ctx.body = parsedStations
   })
 
   // Search stations by name (without /api prefix)
@@ -84,6 +91,13 @@ module.exports = (router) => {
       return null
     }
     const stations = await dbAsync.all('SELECT * FROM stations.stations WHERE stationType IS NOT NULL AND stationName LIKE @stationName LIMIT 25', { stationName: `${stationName}%` })
-    ctx.body = stations
+
+    // Parse prohibited field from JSON string to array
+    const parsedStations = stations.map(station => ({
+      ...station,
+      prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+    }))
+
+    ctx.body = parsedStations
   })
 }

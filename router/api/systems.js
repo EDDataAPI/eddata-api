@@ -99,7 +99,14 @@ module.exports = (router) => {
         )
       ORDER BY stationName
     `, { systemAddress: system.systemAddress })
-    ctx.body = stations
+
+    // Parse prohibited field from JSON string to array
+    const parsedStations = stations.map(station => ({
+      ...station,
+      prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+    }))
+
+    ctx.body = parsedStations
   })
 
   // Get ports (large stations) in system
@@ -120,7 +127,13 @@ module.exports = (router) => {
         ORDER BY stationName
       `, { systemAddress: system.systemAddress })
 
-    ctx.body = stations
+    // Parse prohibited field from JSON string to array
+    const parsedStations = stations.map(station => ({
+      ...station,
+      prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+    }))
+
+    ctx.body = parsedStations
   })
 
   // Get outposts in system
@@ -135,7 +148,13 @@ module.exports = (router) => {
         ORDER BY stationName
       `, { systemAddress: system.systemAddress })
 
-    ctx.body = stations
+    // Parse prohibited field from JSON string to array
+    const parsedStations = stations.map(station => ({
+      ...station,
+      prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+    }))
+
+    ctx.body = parsedStations
   })
 
   // Get settlements in system
@@ -150,7 +169,13 @@ module.exports = (router) => {
         ORDER BY stationName
       `, { systemAddress: system.systemAddress })
 
-    ctx.body = stations
+    // Parse prohibited field from JSON string to array
+    const parsedStations = stations.map(station => ({
+      ...station,
+      prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+    }))
+
+    ctx.body = parsedStations
   })
 
   // Get megaships in system
@@ -165,7 +190,13 @@ module.exports = (router) => {
       ORDER BY stationName
     `, { systemAddress: system.systemAddress })
 
-    ctx.body = stations
+    // Parse prohibited field from JSON string to array
+    const parsedStations = stations.map(station => ({
+      ...station,
+      prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+    }))
+
+    ctx.body = parsedStations
   })
 
   // Get fleet carriers in system
@@ -180,7 +211,13 @@ module.exports = (router) => {
         ORDER BY stationName
       `, { systemAddress: system.systemAddress })
 
-    ctx.body = stations
+    // Parse prohibited field from JSON string to array
+    const parsedStations = stations.map(station => ({
+      ...station,
+      prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+    }))
+
+    ctx.body = parsedStations
   })
 
   // Get commodities for a specific station by name

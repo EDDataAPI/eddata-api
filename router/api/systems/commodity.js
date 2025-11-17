@@ -48,6 +48,8 @@ module.exports = (router) => {
         s.systemX,
         s.systemY,
         s.systemZ,
+        s.prohibited,
+        s.carrierDockingAccess,
         c.buyPrice,
         c.demand,
         c.demandBracket,
@@ -63,7 +65,14 @@ module.exports = (router) => {
         AND c.updatedAtDay > '${getISODate(`-${validatedMaxDaysAgo}`)}'
       ORDER BY s.stationName
       `, { systemAddress: system.systemAddress, commodityName: commodityName.toLowerCase() })
-    ctx.body = commodities
+
+    // Parse prohibited field from JSON string to array
+    const parsedCommodities = commodities.map(commodity => ({
+      ...commodity,
+      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+    }))
+
+    ctx.body = parsedCommodities
   })
 
   // Find nearby systems importing a specific commodity
@@ -115,6 +124,8 @@ module.exports = (router) => {
         s.systemX,
         s.systemY,
         s.systemZ,
+        s.prohibited,
+        s.carrierDockingAccess,
         c.buyPrice,
         c.demand,
         c.demandBracket,
@@ -141,7 +152,13 @@ module.exports = (router) => {
       maxDistance
     })
 
-    ctx.body = commodities
+    // Parse prohibited field from JSON string to array
+    const parsedCommodities = commodities.map(commodity => ({
+      ...commodity,
+      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+    }))
+
+    ctx.body = parsedCommodities
   })
 
   // Find nearby systems exporting a specific commodity
@@ -194,6 +211,8 @@ module.exports = (router) => {
         s.systemX,
         s.systemY,
         s.systemZ,
+        s.prohibited,
+        s.carrierDockingAccess,
         c.buyPrice,
         c.demand,
         c.demandBracket,
@@ -220,6 +239,12 @@ module.exports = (router) => {
       maxDistance
     })
 
-    ctx.body = commodities
+    // Parse prohibited field from JSON string to array
+    const parsedCommodities = commodities.map(commodity => ({
+      ...commodity,
+      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+    }))
+
+    ctx.body = parsedCommodities
   })
 }

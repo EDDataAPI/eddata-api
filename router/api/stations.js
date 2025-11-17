@@ -79,7 +79,13 @@ module.exports = (router) => {
         LIMIT 30
       `)
 
-      ctx.body = topStations
+      // Parse prohibited field from JSON string to array
+      const parsedStations = topStations.map(station => ({
+        ...station,
+        prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+      }))
+
+      ctx.body = parsedStations
     } catch (error) {
       console.error('Error fetching top stations:', error)
       ctx.status = 500

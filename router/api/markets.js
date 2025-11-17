@@ -10,6 +10,12 @@ module.exports = (router) => {
       `, { marketId }
     )
     if (commodities.length === 0) return NotFoundResponse(ctx, 'Market not found')
+
+    // Parse prohibited field from JSON string to array
+    if (commodities.prohibited) {
+      commodities.prohibited = JSON.parse(commodities.prohibited)
+    }
+
     ctx.body = commodities
   })
 
@@ -21,6 +27,12 @@ module.exports = (router) => {
       `, { marketId }
     )
     if (commodities.length === 0) return NotFoundResponse(ctx, 'Market not found')
+
+    // Parse prohibited field from JSON string to array
+    if (commodities.prohibited) {
+      commodities.prohibited = JSON.parse(commodities.prohibited)
+    }
+
     ctx.body = commodities
   })
 

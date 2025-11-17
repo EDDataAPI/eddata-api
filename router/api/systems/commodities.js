@@ -33,6 +33,8 @@ module.exports = (router) => {
         s.systemX,
         s.systemY,
         s.systemZ,
+        s.prohibited,
+        s.carrierDockingAccess,
         c.buyPrice,
         c.demand,
         c.demandBracket,
@@ -46,7 +48,14 @@ module.exports = (router) => {
       WHERE s.systemAddress = @systemAddress
         ORDER BY commodityName ASC
     `, { systemAddress: system.systemAddress })
-    ctx.body = commodities
+
+    // Parse prohibited field from JSON string to array
+    const parsedCommodities = commodities.map(commodity => ({
+      ...commodity,
+      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+    }))
+
+    ctx.body = parsedCommodities
   })
 
   // Get imported commodities in a system
@@ -91,6 +100,8 @@ module.exports = (router) => {
         s.systemX,
         s.systemY,
         s.systemZ,
+        s.prohibited,
+        s.carrierDockingAccess,
         c.buyPrice,
         c.demand,
         c.demandBracket,
@@ -105,7 +116,13 @@ module.exports = (router) => {
         ${filters.join(' ')}
     `, { systemAddress: system.systemAddress })
 
-    ctx.body = commodities || 'No imported commodities'
+    // Parse prohibited field from JSON string to array
+    const parsedCommodities = commodities.map(commodity => ({
+      ...commodity,
+      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+    }))
+
+    ctx.body = parsedCommodities || 'No imported commodities'
   })
 
   // Get exported commodities in a system
@@ -151,6 +168,8 @@ module.exports = (router) => {
     s.systemX,
     s.systemY,
     s.systemZ,
+    s.prohibited,
+    s.carrierDockingAccess,
     c.buyPrice,
     c.demand,
     c.demandBracket,
@@ -165,6 +184,12 @@ module.exports = (router) => {
         ${filters.join(' ')}
     `, { systemAddress: system.systemAddress })
 
-    ctx.body = commodities || 'No exported commodities'
+    // Parse prohibited field from JSON string to array
+    const parsedCommodities = commodities.map(commodity => ({
+      ...commodity,
+      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+    }))
+
+    ctx.body = parsedCommodities || 'No exported commodities'
   })
 }

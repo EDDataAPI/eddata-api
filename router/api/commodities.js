@@ -108,6 +108,8 @@ module.exports = (router) => {
         s.systemX,
         s.systemY,
         s.systemZ,
+        s.prohibited,
+        s.carrierDockingAccess,
         c.buyPrice,
         c.demand,
         c.demandBracket,
@@ -126,7 +128,13 @@ module.exports = (router) => {
         ORDER BY c.sellPrice DESC
           LIMIT ${MAX_COMMODITY_SORTED_RESULTS}`, sqlQueryParams)
 
-    ctx.body = commodities
+    // Parse prohibited field from JSON string to array
+    const parsedCommodities = commodities.map(commodity => ({
+      ...commodity,
+      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+    }))
+
+    ctx.body = parsedCommodities
   }
 
   // Register commodity imports routes (with and without /api prefix)
@@ -196,6 +204,8 @@ module.exports = (router) => {
         s.systemX,
         s.systemY,
         s.systemZ,
+        s.prohibited,
+        s.carrierDockingAccess,
         c.buyPrice,
         c.demand,
         c.demandBracket,
@@ -214,7 +224,13 @@ module.exports = (router) => {
         ORDER BY c.buyPrice ASC
           LIMIT ${MAX_COMMODITY_SORTED_RESULTS}`, sqlQueryParams)
 
-    ctx.body = commodities
+    // Parse prohibited field from JSON string to array
+    const parsedCommodities = commodities.map(commodity => ({
+      ...commodity,
+      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+    }))
+
+    ctx.body = parsedCommodities
   }
 
   // Register commodity exports routes (with and without /api prefix)
