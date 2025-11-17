@@ -25,6 +25,8 @@ module.exports = (router) => {
           s.bodyName,
           s.latitude,
           s.longitude,
+          s.prohibited,
+          s.carrierDockingAccess,
           (
             CASE WHEN s.blackMarket = 1 THEN 1 ELSE 0 END +
             CASE WHEN s.shipyard = 1 THEN 1 ELSE 0 END +

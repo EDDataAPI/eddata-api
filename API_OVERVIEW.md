@@ -461,6 +461,8 @@ Returns top 30 stations ranked by service count (number of available services).
     "vistaGenomics": 0,
     "pioneerSupplies": 0,
     "bartender": 1,
+    "prohibited": ["OnionHeadC", "Slaves"],
+    "carrierDockingAccess": null,
     "updatedAt": "2025-11-15T10:00:00Z"
   }
 ]
@@ -469,6 +471,8 @@ Returns top 30 stations ranked by service count (number of available services).
 **Notes:**
 - Excludes Fleet Carriers
 - Services counted: blackMarket, shipyard, outfitting, refuel, repair, restock, contacts, crewLounge, interstellarFactors, universalCartographics, materialTrader, technologyBroker, searchAndRescue, tuning, missions, engineer, frontlineSolutions, apexInterstellar, vistaGenomics, pioneerSupplies, bartender (21 total)
+- `prohibited`: JSON array of prohibited commodities (NULL if none or unknown)
+- `carrierDockingAccess`: Fleet Carrier access level - "all", "squadronFriends", "none", or NULL for regular stations
 - Sorted by service count descending, then by landing pad size descending
 
 ---
@@ -590,9 +594,15 @@ Search for stations by name (partial match supported).
   "vistaGenomics": 0,
   "pioneerSupplies": 0,
   "bartender": 1,
+  "prohibited": null,
+  "carrierDockingAccess": null,
   "updatedAt": "2025-11-15T10:00:00Z"
 }
 ```
+
+**Field Notes:**
+- `prohibited`: JSON array of prohibited commodity names (e.g., `["OnionHeadC", "Slaves"]`). NULL if no prohibitions or data unavailable. Only present in ~10-20% of stations (CAPI data only).
+- `carrierDockingAccess`: Docking access level for Fleet Carriers. Values: `"all"` (public), `"squadronFriends"` (squadron & friends), `"none"` (private), or `null` (not a Fleet Carrier or data unavailable).
 
 ### System
 ```json

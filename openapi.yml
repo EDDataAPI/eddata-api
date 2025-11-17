@@ -1199,6 +1199,19 @@ components:
           type: integer
           enum: [0, 1]
           description: Has bartender (1) or not (0)
+        prohibited:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: JSON array of prohibited commodity names (e.g., ["OnionHeadC", "Slaves"]). NULL if no prohibitions or data unavailable. Only present in ~10-20% of stations (CAPI data only).
+          example: ["OnionHeadC", "Slaves"]
+        carrierDockingAccess:
+          type: string
+          nullable: true
+          enum: ["all", "squadronFriends", "none", null]
+          description: Fleet Carrier docking access level. "all" = public, "squadronFriends" = squadron & friends only, "none" = private, null = not a Fleet Carrier or data unavailable.
+          example: "all"
         updatedAt:
           type: string
           format: date-time
