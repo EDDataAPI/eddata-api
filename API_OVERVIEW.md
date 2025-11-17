@@ -88,7 +88,50 @@ Returns the latest Galnet news articles from Elite Dangerous.
 ```
 
 #### `GET /v2/news/commodities`
-Returns recent commodity market updates (ticker).
+Returns recent commodity market updates (ticker) from the top 50 most recently updated stations.
+
+**Notes:**
+- Excludes Fleet Carriers
+- Shows high-demand imports (demand >1,000 or infinite, bracket 3, highest sell prices)
+- Shows high-stock exports (stock >1,000, bracket 3, highest buy prices)
+- Updated every hour
+- Only includes data from the last 24 hours
+- Filtered to one entry per station
+
+**Response:**
+```json
+[
+  {
+    "commodityName": "gold",
+    "marketId": 3224635648,
+    "stationName": "Jameson Memorial",
+    "stationType": "Orbis",
+    "distanceToArrival": 325,
+    "maxLandingPadSize": "L",
+    "bodyId": 1,
+    "bodyName": "Shinrarta Dezhra A 1",
+    "systemAddress": 3932277478106,
+    "systemName": "Shinrarta Dezhra",
+    "systemX": 55.71875,
+    "systemY": 17.59375,
+    "systemZ": 27.15625,
+    "buyPrice": 44441,
+    "demand": 0,
+    "demandBracket": 3,
+    "meanPrice": 45000,
+    "sellPrice": 48259,
+    "stock": 73016,
+    "stockBracket": 2,
+    "updatedAt": "2025-11-17T10:30:00Z"
+  }
+]
+```
+
+**Field Descriptions:**
+- `demand`: 0 indicates infinite demand
+- `demandBracket`/`stockBracket`: 0 (none), 1 (low), 2 (medium), 3 (high)
+- `buyPrice`: Price station pays when buying from player
+- `sellPrice`: Price station charges when selling to player
 
 ---
 

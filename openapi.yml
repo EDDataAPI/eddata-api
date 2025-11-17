@@ -278,8 +278,25 @@ paths:
       tags:
         - News
       summary: Get commodity market ticker
-      description: Returns recent commodity market updates
+      description: Returns recent commodity market updates from the top 50 most recently updated stations. Shows high-demand imports and high-stock exports. Excludes Fleet Carriers. Updated hourly. Only includes data from the last 24 hours.
       operationId: getCommodityTicker
+      responses:
+        '200':
+          description: Commodity market ticker data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommodityOrder'
+  
+  /v2/news/commodities:
+    get:
+      tags:
+        - News
+      summary: Get commodity market ticker (no /api prefix)
+      description: Returns recent commodity market updates from the top 50 most recently updated stations. Shows high-demand imports and high-stock exports. Excludes Fleet Carriers. Updated hourly. Only includes data from the last 24 hours.
+      operationId: getCommodityTickerShort
       responses:
         '200':
           description: Commodity market ticker data
