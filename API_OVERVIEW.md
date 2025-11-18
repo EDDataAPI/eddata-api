@@ -42,6 +42,46 @@ Returns the current API version.
 }
 ```
 
+#### `GET /v2/endpoints`
+Returns a comprehensive list of all available API endpoints organized by category.
+
+**Response:**
+```json
+{
+  "version": "1.0.0",
+  "baseUrl": "https://api.eddata.dev",
+  "totalEndpoints": 32,
+  "note": "All endpoints support dual patterns: /api/v2/* and /v2/*",
+  "categories": {
+    "general": [
+      {
+        "method": "GET",
+        "path": "/v2/version",
+        "description": "Get API version"
+      },
+      {
+        "method": "GET",
+        "path": "/v2/health",
+        "description": "Basic health check"
+      }
+    ],
+    "news": [
+      {
+        "method": "GET",
+        "path": "/v2/news/galnet",
+        "description": "Latest Galnet news articles"
+      }
+    ],
+    "commodities": [],
+    "systems": [],
+    "stations": [],
+    "markets": [],
+    "search": []
+  },
+  "timestamp": "2025-11-18T15:00:00Z"
+}
+```
+
 #### `GET /v2/health`
 Basic health check endpoint for monitoring.
 

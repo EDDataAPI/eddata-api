@@ -255,6 +255,136 @@ paths:
                     type: string
                     example: "1.0.0"
 
+  /api/v2/endpoints:
+    get:
+      tags:
+        - General
+      summary: List all available endpoints
+      description: Returns a comprehensive list of all available API endpoints organized by category
+      operationId: getEndpoints
+      responses:
+        '200':
+          description: List of all API endpoints
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  baseUrl:
+                    type: string
+                    example: "https://api.eddata.dev"
+                  totalEndpoints:
+                    type: integer
+                    example: 32
+                  note:
+                    type: string
+                    example: "All endpoints support dual patterns: /api/v2/* and /v2/*"
+                  categories:
+                    type: object
+                    properties:
+                      general:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            method:
+                              type: string
+                              example: "GET"
+                            path:
+                              type: string
+                              example: "/v2/version"
+                            description:
+                              type: string
+                              example: "Get API version"
+                      news:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                            description:
+                              type: string
+                      commodities:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                            description:
+                              type: string
+                      systems:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                            description:
+                              type: string
+                      stations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                            description:
+                              type: string
+                      markets:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                            description:
+                              type: string
+                      search:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                            description:
+                              type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-18T15:00:00Z"
+
+  /v2/endpoints:
+    get:
+      tags:
+        - General
+      summary: List all available endpoints (no /api prefix)
+      description: Returns a comprehensive list of all available API endpoints organized by category
+      operationId: getEndpointsShort
+      responses:
+        '200':
+          description: List of all API endpoints
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointsList'
+
   /v2/stats:
     get:
       tags:
@@ -1215,6 +1345,81 @@ components:
         - 3: Large
 
   schemas:
+    EndpointsList:
+      type: object
+      properties:
+        version:
+          type: string
+          example: "1.0.0"
+        baseUrl:
+          type: string
+          example: "https://api.eddata.dev"
+        totalEndpoints:
+          type: integer
+          example: 32
+        note:
+          type: string
+          example: "All endpoints support dual patterns: /api/v2/* and /v2/*"
+        categories:
+          type: object
+          properties:
+            general:
+              type: array
+              items:
+                $ref: '#/components/schemas/EndpointInfo'
+            news:
+              type: array
+              items:
+                $ref: '#/components/schemas/EndpointInfo'
+            commodities:
+              type: array
+              items:
+                $ref: '#/components/schemas/EndpointInfo'
+            systems:
+              type: array
+              items:
+                $ref: '#/components/schemas/EndpointInfo'
+            stations:
+              type: array
+              items:
+                $ref: '#/components/schemas/EndpointInfo'
+            markets:
+              type: array
+              items:
+                $ref: '#/components/schemas/EndpointInfo'
+            search:
+              type: array
+              items:
+                $ref: '#/components/schemas/EndpointInfo'
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-18T15:00:00Z"
+      required:
+        - version
+        - baseUrl
+        - totalEndpoints
+        - categories
+        - timestamp
+
+    EndpointInfo:
+      type: object
+      properties:
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH]
+          example: "GET"
+        path:
+          type: string
+          example: "/v2/version"
+        description:
+          type: string
+          example: "Get API version"
+      required:
+        - method
+        - path
+        - description
+
     System:
       type: object
       properties:

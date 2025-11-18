@@ -35,6 +35,76 @@ router.get('/v2/version', (ctx, next) => {
   ctx.body = { version: Package.version }
 })
 
+// Endpoints listing (with and without /api prefix)
+const endpointsHandler = (ctx, next) => {
+  const endpoints = {
+    general: [
+      { method: 'GET', path: '/v2/version', description: 'Get API version' },
+      { method: 'GET', path: '/v2/health', description: 'Basic health check' },
+      { method: 'GET', path: '/api/health', description: 'Standard health check' },
+      { method: 'GET', path: '/api/health/database', description: 'Database health check' },
+      { method: 'GET', path: '/v2/stats', description: 'Database statistics' },
+      { method: 'GET', path: '/v2/stats/database/size', description: 'Database size information' },
+      { method: 'GET', path: '/v2/stats/database/tables', description: 'Table-level statistics' },
+      { method: 'GET', path: '/v2/endpoints', description: 'List all available endpoints' }
+    ],
+    news: [
+      { method: 'GET', path: '/v2/news/galnet', description: 'Latest Galnet news articles' },
+      { method: 'GET', path: '/v2/news/commodities', description: 'Recent commodity market updates (ticker)' }
+    ],
+    commodities: [
+      { method: 'GET', path: '/v2/commodities', description: 'All traded commodities with price ranges' },
+      { method: 'GET', path: '/v2/commodities/top', description: 'Top 30 commodities by trading activity' },
+      { method: 'GET', path: '/v2/commodity/name/{commodityName}', description: 'Summary for specific commodity' },
+      { method: 'GET', path: '/v2/commodity/name/{commodityName}/imports', description: 'Places importing commodity (sell locations)' },
+      { method: 'GET', path: '/v2/commodity/name/{commodityName}/exports', description: 'Places exporting commodity (buy locations)' }
+    ],
+    systems: [
+      { method: 'GET', path: '/v2/system/name/{systemName}', description: 'System information by name' },
+      { method: 'GET', path: '/v2/system/address/{systemAddress}', description: 'System information by address' },
+      { method: 'GET', path: '/v2/systems/top', description: 'Top 30 systems by station count' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/status', description: 'System status from EDSM' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/bodies', description: 'System bodies from EDSM' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/markets', description: 'All markets in system' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/stations', description: 'All stations in system' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/nearby', description: 'Nearby systems' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/nearby/contacts', description: 'Nearby points of interest' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/nearest/{service}', description: 'Nearest station with service' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/commodities', description: 'All trade orders in system' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/commodities/imports', description: 'System imports (sell locations)' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/commodities/exports', description: 'System exports (buy locations)' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/commodity/name/{commodityName}', description: 'Commodity orders in specific system' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/commodity/name/{commodityName}/nearby/imports', description: 'Nearby imports for commodity' },
+      { method: 'GET', path: '/v2/system/name/{systemName}/commodity/name/{commodityName}/nearby/exports', description: 'Nearby exports for commodity' }
+    ],
+    stations: [
+      { method: 'GET', path: '/v2/stations/top', description: 'Top 30 stations by service count' }
+    ],
+    markets: [
+      { method: 'GET', path: '/v2/market/{marketId}/commodities', description: 'All commodity orders for market' },
+      { method: 'GET', path: '/v2/market/{marketId}/commodity/name/{commodityName}', description: 'Commodity info for specific market' }
+    ],
+    search: [
+      { method: 'GET', path: '/v2/search/system/name/{searchTerm}', description: 'Search systems by name' },
+      { method: 'GET', path: '/v2/search/station/name/{searchTerm}', description: 'Search stations by name' }
+    ]
+  }
+
+  const totalEndpoints = Object.values(endpoints).reduce((sum, category) => sum + category.length, 0)
+
+  ctx.body = {
+    version: Package.version,
+    baseUrl: 'https://api.eddata.dev',
+    totalEndpoints,
+    note: 'All endpoints support dual patterns: /api/v2/* and /v2/*',
+    categories: endpoints,
+    timestamp: new Date().toISOString()
+  }
+}
+
+router.get('/api/v2/endpoints', endpointsHandler)
+router.get('/v2/endpoints', endpointsHandler)
+
 // Stats endpoint (with and without /api prefix)
 const statsHandler = async (ctx, next) => {
   try {
