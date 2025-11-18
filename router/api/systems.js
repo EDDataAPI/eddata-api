@@ -295,48 +295,62 @@ module.exports = (router) => {
 
   // Get nearest system with specific service
   registerRoute('/v2/system/:systemIdentiferType/:systemIdentifer/nearest/:serviceType', async (ctx, next) => {
-    const { systemIdentiferType, systemIdentifer, serviceType } = ctx.params
-    const system = await getSystem(systemIdentifer, systemIdentiferType)
-    if (!system) return NotFoundResponse(ctx, 'System not found')
-    const { systemX, systemY, systemZ } = system
+    try {
+      const { systemIdentiferType, systemIdentifer, serviceType } = ctx.params
+      const system = await getSystem(systemIdentifer, systemIdentiferType)
+      if (!system) return NotFoundResponse(ctx, 'System not found')
+      const { systemX, systemY, systemZ } = system
 
-    const { minLandingPadSize = 1 } = ctx.query
+      const { minLandingPadSize = 1 } = ctx.query
 
-    const serviceTypes = {
-      'interstellar-factors': 'interstellarFactors',
-      'material-trader': 'materialTrader',
-      'technology-broker': 'technologyBroker',
-      'black-market': 'blackMarket',
-      'universal-cartographics': 'universalCartographics',
-      refuel: 'refuel',
-      repair: 'repair',
-      shipyard: 'shipyard',
-      outfitting: 'outfitting',
-      'search-and-rescue': 'searchAndRescue'
-    }
-    if (!serviceTypes[serviceType]) return NotFoundResponse(ctx, 'Service unknown')
+      const serviceTypes = {
+        'interstellar-factors': 'interstellarFactors',
+        'material-trader': 'materialTrader',
+        'technology-broker': 'technologyBroker',
+        'black-market': 'blackMarket',
+        'universal-cartographics': 'universalCartographics',
+        refuel: 'refuel',
+        repair: 'repair',
+        shipyard: 'shipyard',
+        outfitting: 'outfitting',
+        'search-and-rescue': 'searchAndRescue'
+      }
+      if (!serviceTypes[serviceType]) return NotFoundResponse(ctx, 'Service unknown')
 
-    const serviceColumn = serviceTypes[serviceType]
-    const minPadSize = parseInt(minLandingPadSize) || 1
+      const serviceColumn = serviceTypes[serviceType]
+      const minPadSize = parseInt(minLandingPadSize) || 1
 
-    ctx.body = await dbAsync.all(`
-      SELECT
-        *,
-        ROUND(SQRT(POWER(systemX-@systemX,2)+POWER(systemY-@systemY,2)+POWER(systemZ-@systemZ,2))) AS distance
-      FROM stations.stations
-        WHERE ${serviceColumn} = 1
-          AND maxLandingPadSize >= @minPadSize
-          AND systemX IS NOT NULL
-          AND systemY IS NOT NULL
-          AND systemZ IS NOT NULL
-        HAVING distance IS NOT NULL
-      ORDER BY distance
+      // Use CTE (Common Table Expression) to calculate distance properly
+      ctx.body = await dbAsync.all(`
+        WITH station_distances AS (
+          SELECT
+            *,
+            ROUND(SQRT(POWER(systemX-@systemX,2)+POWER(systemY-@systemY,2)+POWER(systemZ-@systemZ,2))) AS distance
+          FROM stations.stations
+          WHERE ${serviceColumn} = 1
+            AND maxLandingPadSize >= @minPadSize
+            AND systemX IS NOT NULL
+            AND systemY IS NOT NULL
+            AND systemZ IS NOT NULL
+        )
+        SELECT * FROM station_distances
+        WHERE distance IS NOT NULL
+        ORDER BY distance
         LIMIT ${MAX_NEARBY_CONTACTS_RESULTS}`, {
-      systemX,
-      systemY,
-      systemZ,
-      minPadSize
-    })
+        systemX,
+        systemY,
+        systemZ,
+        minPadSize
+      })
+    } catch (error) {
+      console.error('❌ Nearest service error:', error.message, error.stack)
+      ctx.status = 500
+      ctx.body = {
+        error: 'Internal Server Error',
+        message: 'Failed to find nearest services',
+        details: error.message
+      }
+    }
   })
 
   // Top 30 systems by station count
