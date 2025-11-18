@@ -316,13 +316,16 @@ module.exports = (router) => {
     }
     if (!serviceTypes[serviceType]) return NotFoundResponse(ctx, 'Service unknown')
 
+    const serviceColumn = serviceTypes[serviceType]
+    const minPadSize = parseInt(minLandingPadSize) || 1
+
     ctx.body = await dbAsync.all(`
       SELECT
         *,
         ROUND(SQRT(POWER(systemX-@systemX,2)+POWER(systemY-@systemY,2)+POWER(systemZ-@systemZ,2))) AS distance
       FROM stations.stations
-        WHERE ${serviceTypes[serviceType]} = 1
-          AND maxLandingPadSize >= ${minLandingPadSize}
+        WHERE ${serviceColumn} = 1
+          AND maxLandingPadSize >= @minPadSize
           AND systemX IS NOT NULL
           AND systemY IS NOT NULL
           AND systemZ IS NOT NULL
@@ -331,7 +334,8 @@ module.exports = (router) => {
         LIMIT ${MAX_NEARBY_CONTACTS_RESULTS}`, {
       systemX,
       systemY,
-      systemZ
+      systemZ,
+      minPadSize
     })
   })
 
