@@ -139,6 +139,52 @@ paths:
                         type: boolean
                         enum: [false]
 
+  /api/status:
+    get:
+      tags:
+        - General
+      summary: Server status check
+      description: Server status endpoint (alias for health check) - commonly used by frontend applications
+      operationId: getStatus
+      responses:
+        '200':
+          description: Server is operational
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-18T14:30:00.000Z"
+                  uptime:
+                    type: integer
+                    example: 3600
+                    description: Server uptime in seconds
+                  version:
+                    type: string
+                    example: "1.0.0"
+        '503':
+          description: Server unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  error:
+                    type: string
+                    example: "Service temporarily unavailable"
+
   /v2/health:
     get:
       tags:
@@ -377,6 +423,21 @@ paths:
       summary: List all available endpoints (no /api prefix)
       description: Returns a comprehensive list of all available API endpoints organized by category
       operationId: getEndpointsShort
+      responses:
+        '200':
+          description: List of all API endpoints
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointsList'
+
+  /api/endpoints:
+    get:
+      tags:
+        - General
+      summary: List all available endpoints (legacy)
+      description: Legacy endpoint that returns a comprehensive list of all available API endpoints (identical to /v2/endpoints)
+      operationId: getEndpointsLegacy
       responses:
         '200':
           description: List of all API endpoints

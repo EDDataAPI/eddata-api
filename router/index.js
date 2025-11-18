@@ -43,10 +43,12 @@ const endpointsHandler = (ctx, next) => {
       { method: 'GET', path: '/v2/health', description: 'Basic health check' },
       { method: 'GET', path: '/api/health', description: 'Standard health check' },
       { method: 'GET', path: '/api/health/database', description: 'Database health check' },
+      { method: 'GET', path: '/api/status', description: 'Server status check' },
       { method: 'GET', path: '/v2/stats', description: 'Database statistics' },
       { method: 'GET', path: '/v2/stats/database/size', description: 'Database size information' },
       { method: 'GET', path: '/v2/stats/database/tables', description: 'Table-level statistics' },
-      { method: 'GET', path: '/v2/endpoints', description: 'List all available endpoints' }
+      { method: 'GET', path: '/v2/endpoints', description: 'List all available endpoints' },
+      { method: 'GET', path: '/api/endpoints', description: 'List all available endpoints (legacy)' }
     ],
     news: [
       { method: 'GET', path: '/v2/news/galnet', description: 'Latest Galnet news articles' },
@@ -96,7 +98,7 @@ const endpointsHandler = (ctx, next) => {
     version: Package.version,
     baseUrl: 'https://api.eddata.dev',
     totalEndpoints,
-    note: 'All endpoints support dual patterns: /api/v2/* and /v2/*',
+    note: 'All endpoints support multiple patterns: /api/v2/*, /v2/*, and some legacy /api/* paths',
     categories: endpoints,
     timestamp: new Date().toISOString()
   }
@@ -104,6 +106,7 @@ const endpointsHandler = (ctx, next) => {
 
 router.get('/api/v2/endpoints', endpointsHandler)
 router.get('/v2/endpoints', endpointsHandler)
+router.get('/api/endpoints', endpointsHandler)
 
 // Stats endpoint (with and without /api prefix)
 const statsHandler = async (ctx, next) => {

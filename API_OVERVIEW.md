@@ -50,8 +50,8 @@ Returns a comprehensive list of all available API endpoints organized by categor
 {
   "version": "1.0.0",
   "baseUrl": "https://api.eddata.dev",
-  "totalEndpoints": 32,
-  "note": "All endpoints support dual patterns: /api/v2/* and /v2/*",
+  "totalEndpoints": 33,
+  "note": "All endpoints support multiple patterns: /api/v2/*, /v2/*, and some legacy /api/* paths",
   "categories": {
     "general": [
       {
@@ -81,6 +81,11 @@ Returns a comprehensive list of all available API endpoints organized by categor
   "timestamp": "2025-11-18T15:00:00Z"
 }
 ```
+
+#### `GET /api/endpoints`
+Legacy endpoint that returns the same comprehensive list of all available API endpoints (identical to `/v2/endpoints`).
+
+**Response:** Same as `/v2/endpoints`
 
 #### `GET /v2/health`
 Basic health check endpoint for monitoring.
@@ -120,6 +125,19 @@ Database connectivity health check with statistics.
     "stations": 48055,
     "connected": true
   }
+}
+```
+
+#### `GET /api/status`
+Server status check endpoint (alias for health check).
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-11-18T14:30:00.000Z",
+  "uptime": 3600,
+  "version": "1.0.0"
 }
 ```
 

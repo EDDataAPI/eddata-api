@@ -22,6 +22,27 @@ module.exports = (router) => {
     }
   })
 
+  // Status endpoint (alias for health)
+  router.get('/api/status', async (ctx, next) => {
+    try {
+      ctx.status = 200
+      ctx.body = {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: Math.floor(process.uptime()),
+        version: '1.0.0'
+      }
+    } catch (error) {
+      console.error('❌ Status check failed:', error.message)
+      ctx.status = 503
+      ctx.body = {
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        error: error.message
+      }
+    }
+  })
+
   // Alternative health endpoint
   router.get('/v2/health', async (ctx, next) => {
     ctx.status = 200
