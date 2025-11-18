@@ -30,7 +30,7 @@ servers:
 
 tags:
   - name: General
-    description: API information and statistics
+    description: API information, statistics, and health checks
   - name: News
     description: Galnet news and market ticker
   - name: Commodities
@@ -45,6 +45,125 @@ tags:
     description: Search functionality
 
 paths:
+  /api/health:
+    get:
+      tags:
+        - General
+      summary: Service health check
+      description: Returns the overall health status of the API service
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: integer
+                    description: Service uptime in seconds
+                  version:
+                    type: string
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  error:
+                    type: string
+
+  /api/health/database:
+    get:
+      tags:
+        - General
+      summary: Database health check
+      description: Returns database connectivity status with statistics
+      operationId: getDatabaseHealth
+      responses:
+        '200':
+          description: Database is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  database:
+                    type: object
+                    properties:
+                      systems:
+                        type: integer
+                      stations:
+                        type: integer
+                      connected:
+                        type: boolean
+        '503':
+          description: Database is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  error:
+                    type: string
+                  database:
+                    type: object
+                    properties:
+                      connected:
+                        type: boolean
+                        enum: [false]
+
+  /v2/health:
+    get:
+      tags:
+        - General
+      summary: Simple health check
+      description: Basic health check endpoint for monitoring
+      operationId: getSimpleHealth
+      responses:
+        '200':
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: integer
+                    description: Service uptime in seconds
+
   /api/v2/version:
     get:
       tags:

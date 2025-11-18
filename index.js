@@ -110,6 +110,34 @@ const router = require('./router')
     ctx.redirect(newUrl)
   })
 
+  // Global error handler
+  app.on('error', (err, ctx) => {
+    console.error('Application error:', err.message, err.stack)
+    if (ctx) {
+      console.error('Request details:', {
+        url: ctx.url,
+        method: ctx.method,
+        headers: ctx.headers
+      })
+    }
+  })
+
+  // Error handling middleware
+  app.use(async (ctx, next) => {
+    try {
+      await next()
+    } catch (err) {
+      console.error('Request error:', err.message)
+      ctx.status = err.status || 500
+      ctx.body = {
+        error: 'Internal Server Error',
+        message: err.message,
+        timestamp: new Date().toISOString()
+      }
+      ctx.app.emit('error', err, ctx)
+    }
+  })
+
   app.use(router.routes())
 
   app.listen(EDDATA_API_LOCAL_PORT)
@@ -122,13 +150,17 @@ const router = require('./router')
 process.on('exit', () => console.log('Shutting down'))
 
 process.on('uncaughtException', (e) => {
-  console.error('Uncaught exception:', e)
-  process.exit(1)
+  console.error('Uncaught exception:', e.message, e.stack)
+  // Don't exit immediately, try to handle gracefully
+  setTimeout(() => {
+    console.error('Forcing exit after uncaught exception')
+    process.exit(1)
+  }, 1000)
 })
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason)
-  process.exit(1)
+  // Don't exit for unhandled rejections, just log them
 })
 
 // Graceful shutdown handling

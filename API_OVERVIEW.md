@@ -42,6 +42,47 @@ Returns the current API version.
 }
 ```
 
+#### `GET /v2/health`
+Basic health check endpoint for monitoring.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-11-18T14:30:00.000Z",
+  "uptime": 3600
+}
+```
+
+#### `GET /api/health`
+Standard health check endpoint with service status.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-11-18T14:30:00.000Z",
+  "uptime": 3600,
+  "version": "1.0.0"
+}
+```
+
+#### `GET /api/health/database`
+Database connectivity health check with statistics.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-11-18T14:30:00.000Z",
+  "database": {
+    "systems": 102694411,
+    "stations": 48055,
+    "connected": true
+  }
+}
+```
+
 #### `GET /v2/stats`
 Returns comprehensive database statistics (updated every 15 minutes by collector).
 
