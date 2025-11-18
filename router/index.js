@@ -11,6 +11,7 @@ const {
 } = require('../lib/consts')
 
 const routes = {
+  health: require('./api/health'),
   news: require('./api/news'),
   commodities: require('./api/commodities'),
   systems: require('./api/systems'),
@@ -145,6 +146,7 @@ router.get('/api/v2/backup', async (ctx, next) => {
   }
 })
 
+routes.health(router)
 routes.news(router)
 routes.commodities(router)
 routes.systems(router)

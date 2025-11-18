@@ -7,12 +7,25 @@ module.exports = (router) => {
     try {
       if (!fs.existsSync(EDDATA_GALNET_NEWS_CACHE)) {
         console.warn('⚠️  Galnet news cache file not found:', EDDATA_GALNET_NEWS_CACHE)
+        ctx.status = 200
         ctx.body = []
         return
       }
-      ctx.body = JSON.parse(fs.readFileSync(EDDATA_GALNET_NEWS_CACHE, 'utf8'))
+
+      const fileContent = fs.readFileSync(EDDATA_GALNET_NEWS_CACHE, 'utf8')
+      if (!fileContent || fileContent.trim() === '') {
+        console.warn('⚠️  Galnet news cache file is empty')
+        ctx.status = 200
+        ctx.body = []
+        return
+      }
+
+      const parsedData = JSON.parse(fileContent)
+      ctx.status = 200
+      ctx.body = Array.isArray(parsedData) ? parsedData : []
     } catch (error) {
-      console.error('❌ Error reading Galnet news:', error.message)
+      console.error('❌ Error reading Galnet news:', error.message, error.stack)
+      ctx.status = 200 // Return 200 with empty array instead of 500
       ctx.body = []
     }
   }

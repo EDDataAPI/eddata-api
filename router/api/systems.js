@@ -323,7 +323,10 @@ module.exports = (router) => {
       FROM stations.stations
         WHERE ${serviceTypes[serviceType]} = 1
           AND maxLandingPadSize >= ${minLandingPadSize}
-          AND distance IS NOT NULL
+          AND systemX IS NOT NULL
+          AND systemY IS NOT NULL
+          AND systemZ IS NOT NULL
+        HAVING distance IS NOT NULL
       ORDER BY distance
         LIMIT ${MAX_NEARBY_CONTACTS_RESULTS}`, {
       systemX,
