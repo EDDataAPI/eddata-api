@@ -1,4 +1,4 @@
-const dbAsync = require('../lib/db/db-async')
+const dbAsync = require('../../lib/db/db-async')
 
 module.exports = (router) => {
   // Health check endpoint
