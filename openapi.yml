@@ -308,6 +308,64 @@ paths:
                     format: date-time
                     example: "2025-11-14T12:00:00Z"
 
+  /api/v2/stats/database/size:
+    get:
+      tags:
+        - General
+      summary: Get database size information
+      description: Returns current database size estimates and record counts for all databases
+      operationId: getDatabaseSize
+      responses:
+        '200':
+          description: Database size information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  databases:
+                    type: object
+                  summary:
+                    type: object
+                  timestamp:
+                    type: string
+                    format: date-time
+                  note:
+                    type: string
+
+  /v2/stats/database/size:
+    get:
+      tags:
+        - General
+      summary: Get database size information (no /api prefix)
+      description: Returns current database size estimates and record counts for all databases
+      operationId: getDatabaseSizeShort
+      responses:
+        '200':
+          description: Database size information
+
+  /api/v2/stats/database/tables:
+    get:
+      tags:
+        - General
+      summary: Get detailed table statistics
+      description: Returns table-level statistics for all databases including record counts
+      operationId: getTableStats
+      responses:
+        '200':
+          description: Table statistics
+
+  /v2/stats/database/tables:
+    get:
+      tags:
+        - General
+      summary: Get detailed table statistics (no /api prefix)
+      description: Returns table-level statistics for all databases including record counts
+      operationId: getTableStatsShort
+      responses:
+        '200':
+          description: Table statistics
+
   /api/v2/stats/stations/types:
     get:
       tags:

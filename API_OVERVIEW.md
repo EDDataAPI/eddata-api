@@ -106,6 +106,71 @@ Returns comprehensive database statistics (updated every 15 minutes by collector
 }
 ```
 
+#### `GET /v2/stats/database/size`
+Returns current database size information and record counts.
+
+**Response:**
+```json
+{
+  "databases": {
+    "systems": {
+      "records": 102694411,
+      "estimatedSizeBytes": 8215552880,
+      "estimatedSizeMB": 7835.2
+    },
+    "stations": {
+      "records": 48055,
+      "estimatedSizeBytes": 576660,
+      "estimatedSizeMB": 0.55
+    },
+    "trade": {
+      "records": 10773236,
+      "estimatedSizeBytes": 172371776,
+      "estimatedSizeMB": 164.4
+    }
+  },
+  "summary": {
+    "totalRecords": 113515702,
+    "totalEstimatedSizeBytes": 8388501316,
+    "totalEstimatedSizeMB": 8000.15,
+    "totalEstimatedSizeGB": 7.81
+  },
+  "timestamp": "2025-11-18T15:00:00Z",
+  "note": "Size estimates are approximate and based on record counts and average field lengths"
+}
+```
+
+#### `GET /v2/stats/database/tables`
+Returns detailed table-level statistics for all databases.
+
+**Response:**
+```json
+{
+  "tables": [
+    {
+      "database": "systems",
+      "tableName": "systems",
+      "recordCount": 102694411
+    },
+    {
+      "database": "stations",
+      "tableName": "stations",
+      "recordCount": 48055
+    },
+    {
+      "database": "trade",
+      "tableName": "commodities",
+      "recordCount": 10773236
+    }
+  ],
+  "summary": {
+    "totalTables": 3,
+    "totalRecords": 113515702
+  },
+  "timestamp": "2025-11-18T15:00:00Z"
+}
+```
+
 ---
 
 ### News

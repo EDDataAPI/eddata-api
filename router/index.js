@@ -60,6 +60,135 @@ const statsHandler = async (ctx, next) => {
 router.get('/api/v2/stats', statsHandler)
 router.get('/v2/stats', statsHandler)
 
+// Database size endpoints (with and without /api prefix)
+const databaseSizeHandler = async (ctx, next) => {
+  try {
+    const [systemsInfo, stationsInfo, tradeInfo] = await Promise.all([
+      dbAsync.get(`
+        SELECT 
+          COUNT(*) as totalSystems,
+          (COUNT(*) * 8 + LENGTH(GROUP_CONCAT(systemName)) / COUNT(*)) as estimatedSizeBytes
+        FROM systems.systems
+      `),
+      dbAsync.get(`
+        SELECT 
+          COUNT(*) as totalStations,
+          (COUNT(*) * 12 + LENGTH(GROUP_CONCAT(stationName)) / COUNT(*)) as estimatedSizeBytes
+        FROM stations.stations
+      `),
+      dbAsync.get(`
+        SELECT 
+          COUNT(*) as totalOrders,
+          (COUNT(*) * 16) as estimatedSizeBytes
+        FROM trade.commodities
+      `)
+    ])
+
+    const totalSizeBytes = (systemsInfo?.estimatedSizeBytes || 0) +
+                          (stationsInfo?.estimatedSizeBytes || 0) +
+                          (tradeInfo?.estimatedSizeBytes || 0)
+
+    ctx.body = {
+      databases: {
+        systems: {
+          records: systemsInfo?.totalSystems || 0,
+          estimatedSizeBytes: Math.round(systemsInfo?.estimatedSizeBytes || 0),
+          estimatedSizeMB: Math.round((systemsInfo?.estimatedSizeBytes || 0) / 1024 / 1024 * 100) / 100
+        },
+        stations: {
+          records: stationsInfo?.totalStations || 0,
+          estimatedSizeBytes: Math.round(stationsInfo?.estimatedSizeBytes || 0),
+          estimatedSizeMB: Math.round((stationsInfo?.estimatedSizeBytes || 0) / 1024 / 1024 * 100) / 100
+        },
+        trade: {
+          records: tradeInfo?.totalOrders || 0,
+          estimatedSizeBytes: Math.round(tradeInfo?.estimatedSizeBytes || 0),
+          estimatedSizeMB: Math.round((tradeInfo?.estimatedSizeBytes || 0) / 1024 / 1024 * 100) / 100
+        }
+      },
+      summary: {
+        totalRecords: (systemsInfo?.totalSystems || 0) + (stationsInfo?.totalStations || 0) + (tradeInfo?.totalOrders || 0),
+        totalEstimatedSizeBytes: Math.round(totalSizeBytes),
+        totalEstimatedSizeMB: Math.round(totalSizeBytes / 1024 / 1024 * 100) / 100,
+        totalEstimatedSizeGB: Math.round(totalSizeBytes / 1024 / 1024 / 1024 * 100) / 100
+      },
+      timestamp: new Date().toISOString(),
+      note: 'Size estimates are approximate and based on record counts and average field lengths'
+    }
+  } catch (error) {
+    console.error('Error getting database size:', error)
+    ctx.status = 500
+    ctx.body = { error: 'Failed to get database size information' }
+  }
+}
+
+router.get('/api/v2/stats/database/size', databaseSizeHandler)
+router.get('/v2/stats/database/size', databaseSizeHandler)
+
+// Detailed table statistics
+const tableStatsHandler = async (ctx, next) => {
+  try {
+    const [systemsTables, stationsTables, tradeTables] = await Promise.all([
+      dbAsync.all(`
+        SELECT name as tableName, 
+               'systems' as database
+        FROM systems.sqlite_master 
+        WHERE type='table' AND name NOT LIKE 'sqlite_%'
+      `),
+      dbAsync.all(`
+        SELECT name as tableName,
+               'stations' as database 
+        FROM stations.sqlite_master 
+        WHERE type='table' AND name NOT LIKE 'sqlite_%'
+      `),
+      dbAsync.all(`
+        SELECT name as tableName,
+               'trade' as database
+        FROM trade.sqlite_master 
+        WHERE type='table' AND name NOT LIKE 'sqlite_%'
+      `)
+    ])
+
+    const allTables = [...systemsTables, ...stationsTables, ...tradeTables]
+    const tableDetails = []
+
+    for (const table of allTables) {
+      try {
+        const countResult = await dbAsync.get(`SELECT COUNT(*) as count FROM ${table.database}.${table.tableName}`)
+        tableDetails.push({
+          database: table.database,
+          tableName: table.tableName,
+          recordCount: countResult?.count || 0
+        })
+      } catch (err) {
+        console.warn(`Could not get count for ${table.database}.${table.tableName}:`, err.message)
+        tableDetails.push({
+          database: table.database,
+          tableName: table.tableName,
+          recordCount: 0,
+          error: err.message
+        })
+      }
+    }
+
+    ctx.body = {
+      tables: tableDetails,
+      summary: {
+        totalTables: tableDetails.length,
+        totalRecords: tableDetails.reduce((sum, table) => sum + (table.recordCount || 0), 0)
+      },
+      timestamp: new Date().toISOString()
+    }
+  } catch (error) {
+    console.error('Error getting table stats:', error)
+    ctx.status = 500
+    ctx.body = { error: 'Failed to get table statistics' }
+  }
+}
+
+router.get('/api/v2/stats/database/tables', tableStatsHandler)
+router.get('/v2/stats/database/tables', tableStatsHandler)
+
 router.get('/api/v2/stats/stations/types', async (ctx, next) => {
   const stationTypes = await dbAsync.all(`
       SELECT stationType, COUNT(*) as count FROM stations
