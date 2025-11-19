@@ -122,18 +122,24 @@ const router = require('./router')
     }
   })
 
-  // Error handling middleware
+  // Error handling middleware - prevent 500/503 errors from reaching clients
   app.use(async (ctx, next) => {
     try {
       await next()
     } catch (err) {
       console.error('Request error:', err.message)
-      ctx.status = err.status || 500
+
+      // Always try to return 200 with error info to prevent 503 errors
+      ctx.status = 200
       ctx.body = {
-        error: 'Internal Server Error',
-        message: err.message,
-        timestamp: new Date().toISOString()
+        status: 'error',
+        message: 'Service temporarily unavailable',
+        info: err.message,
+        timestamp: new Date().toISOString(),
+        note: 'Please try again later or contact support if the issue persists'
       }
+
+      // Still emit the error for logging
       ctx.app.emit('error', err, ctx)
     }
   })

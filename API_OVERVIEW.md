@@ -841,6 +841,33 @@ Search for stations by name (partial match supported).
 
 ## Error Responses
 
+### Robust Error Handling
+The API is designed to minimize service interruptions. Instead of returning HTTP 500/503 errors that can break client applications, the API returns HTTP 200 responses with error information when services are temporarily unavailable.
+
+### Standard Error Format
+```json
+{
+  "status": "error",
+  "message": "Service temporarily unavailable",
+  "info": "Database connection failed",
+  "timestamp": "2025-11-19T10:00:00Z",
+  "note": "Please try again later or contact support if the issue persists"
+}
+```
+
+### Fallback Data
+When backend services are unavailable, endpoints return structured fallback data:
+
+```json
+{
+  "systems": 0,
+  "stations": { "stations": 0, "carriers": 0 },
+  "status": "unavailable",
+  "message": "Database statistics temporarily unavailable",
+  "timestamp": "2025-11-19T10:00:00Z"
+}
+```
+
 ### 404 Not Found
 ```json
 {
@@ -849,13 +876,15 @@ Search for stations by name (partial match supported).
 }
 ```
 
-### 500 Internal Server Error
+### Legacy 500 Internal Server Error
 ```json
 {
   "error": "Internal Server Error",
   "message": "An error occurred while processing your request"
 }
 ```
+
+**Note:** Most errors now return HTTP 200 with error details to ensure better client compatibility.
 
 ---
 
