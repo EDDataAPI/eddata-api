@@ -15,35 +15,82 @@ module.exports = (router) => {
   // Get all commodities (with and without /api prefix)
   router.get('/api/v2/commodities', async (ctx, next) => {
     try {
-      ctx.body = JSON.parse(fs.readFileSync(COMMODITIES_REPORT)).commodities
+      if (!fs.existsSync(COMMODITIES_REPORT)) {
+        console.warn('⚠️  Commodities report not found')
+        ctx.status = 200
+        ctx.body = { commodities: [], status: 'unavailable', message: 'Commodities data temporarily unavailable' }
+        return
+      }
+      const data = fs.readFileSync(COMMODITIES_REPORT, 'utf8')
+      const parsed = JSON.parse(data)
+      ctx.body = parsed.commodities || []
     } catch (e) {
-      console.error(e)
-      ctx.body = null
+      console.warn('⚠️  Commodities data unavailable:', e.message)
+      ctx.status = 200
+      ctx.body = { commodities: [], status: 'unavailable', message: 'Commodities data temporarily unavailable' }
     }
   })
   router.get('/v2/commodities', async (ctx, next) => {
     try {
-      ctx.body = JSON.parse(fs.readFileSync(COMMODITIES_REPORT)).commodities
+      if (!fs.existsSync(COMMODITIES_REPORT)) {
+        console.warn('⚠️  Commodities report not found')
+        ctx.status = 200
+        ctx.body = { commodities: [], status: 'unavailable', message: 'Commodities data temporarily unavailable' }
+        return
+      }
+      const data = fs.readFileSync(COMMODITIES_REPORT, 'utf8')
+      const parsed = JSON.parse(data)
+      ctx.body = parsed.commodities || []
     } catch (e) {
-      console.error(e)
-      ctx.body = null
+      console.warn('⚠️  Commodities data unavailable:', e.message)
+      ctx.status = 200
+      ctx.body = { commodities: [], status: 'unavailable', message: 'Commodities data temporarily unavailable' }
     }
   })
 
   // Get specific commodity by name (with and without /api prefix)
   router.get('/api/v2/commodity/name/:commodityName', async (ctx, next) => {
-    let { commodityName } = ctx.params
-    commodityName = commodityName.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, '')
-    const pathToFile = path.join(EDDATA_CACHE_DIR, 'commodities', `${commodityName}`, `${commodityName}.json`)
-    if (!fs.existsSync(pathToFile)) return NotFoundResponse(ctx, 'Commodity not found')
-    ctx.body = JSON.parse(fs.readFileSync(pathToFile))
+    try {
+      let { commodityName } = ctx.params
+      // Enhanced input validation and sanitization
+      if (!commodityName || typeof commodityName !== 'string') {
+        return NotFoundResponse(ctx, 'Invalid commodity name')
+      }
+      commodityName = commodityName.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, '')
+      if (commodityName.length === 0 || commodityName.length > 50) {
+        return NotFoundResponse(ctx, 'Commodity name invalid length')
+      }
+      const pathToFile = path.join(EDDATA_CACHE_DIR, 'commodities', commodityName, `${commodityName}.json`)
+      if (!fs.existsSync(pathToFile)) return NotFoundResponse(ctx, 'Commodity not found')
+      const data = fs.readFileSync(pathToFile, 'utf8')
+      ctx.body = JSON.parse(data)
+    } catch (error) {
+      console.warn('⚠️  Commodity detail unavailable:', error.message)
+      ctx.status = 200
+      ctx.body = {
+        commodityName: ctx.params.commodityName,
+        status: 'unavailable',
+        message: 'Commodity details temporarily unavailable'
+      }
+    }
   })
   router.get('/v2/commodity/name/:commodityName', async (ctx, next) => {
-    let { commodityName } = ctx.params
-    commodityName = commodityName.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, '')
-    const pathToFile = path.join(EDDATA_CACHE_DIR, 'commodities', `${commodityName}`, `${commodityName}.json`)
-    if (!fs.existsSync(pathToFile)) return NotFoundResponse(ctx, 'Commodity not found')
-    ctx.body = JSON.parse(fs.readFileSync(pathToFile))
+    try {
+      let { commodityName } = ctx.params
+      commodityName = commodityName.trim().toLowerCase().replace(/[^a-zA-Z0-9]/g, '')
+      const pathToFile = path.join(EDDATA_CACHE_DIR, 'commodities', `${commodityName}`, `${commodityName}.json`)
+      if (!fs.existsSync(pathToFile)) return NotFoundResponse(ctx, 'Commodity not found')
+      const data = fs.readFileSync(pathToFile, 'utf8')
+      ctx.body = JSON.parse(data)
+    } catch (error) {
+      console.warn('⚠️  Commodity detail unavailable:', error.message)
+      ctx.status = 200
+      ctx.body = {
+        commodityName: ctx.params.commodityName,
+        status: 'unavailable',
+        message: 'Commodity details temporarily unavailable'
+      }
+    }
   })
 
   // Commodity imports handler (shared logic for both routes)
@@ -60,15 +107,18 @@ module.exports = (router) => {
     } = ctx.query
 
     // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
-    maxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
+    maxDaysAgo = Math.min(parseInt(maxDaysAgo, 10) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
+    // Validate and sanitize numeric inputs
+    minVolume = Math.max(0, parseInt(minVolume, 10) || 1)
+    minPrice = Math.max(0, parseInt(minPrice, 10) || 1)
 
     const sqlQueryParams = {
       commodityName: commodityName.toLowerCase()
     }
 
     const filters = [
-      `AND (c.demand >= ${parseInt(minVolume)} OR c.demand = 0)`, // Zero is infinite demand
-      `AND c.sellPrice >= ${parseInt(minPrice)}`,
+      `AND (c.demand >= ${Math.max(0, parseInt(minVolume, 10) || 1)} OR c.demand = 0)`, // Zero is infinite demand
+      `AND c.sellPrice >= ${Math.max(0, parseInt(minPrice, 10) || 1)}`,
       `AND c.updatedAtDay > '${getISODate(`-${maxDaysAgo}`)}'`
     ]
 
@@ -128,10 +178,19 @@ module.exports = (router) => {
         ORDER BY c.sellPrice DESC
           LIMIT ${MAX_COMMODITY_SORTED_RESULTS}`, sqlQueryParams)
 
-    // Parse prohibited field from JSON string to array
+    // Parse prohibited field from JSON string to array with error handling
     const parsedCommodities = commodities.map(commodity => ({
       ...commodity,
-      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+      prohibited: commodity.prohibited
+        ? (() => {
+            try {
+              return JSON.parse(commodity.prohibited)
+            } catch (e) {
+              console.warn('⚠️  Invalid JSON in prohibited field:', e.message)
+              return null
+            }
+          })()
+        : null
     }))
 
     ctx.body = parsedCommodities
@@ -155,14 +214,14 @@ module.exports = (router) => {
     } = ctx.query
 
     // Enforce maximum age limit (trading data older than 2 weeks is unreliable)
-    maxDaysAgo = Math.min(parseInt(maxDaysAgo) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
+    maxDaysAgo = Math.min(parseInt(maxDaysAgo, 10) || DEFAULT_MAX_RESULTS_AGE, MAX_RESULTS_AGE)
 
     const sqlQueryParams = {
       commodityName: commodityName.toLowerCase()
     }
 
     const filters = [
-      `AND c.stock >= ${parseInt(minVolume)}`,
+      `AND c.stock >= ${Math.max(0, parseInt(minVolume, 10) || 1)}`,
       `AND c.updatedAtDay > '${getISODate(`-${maxDaysAgo}`)}'`
     ]
 
@@ -182,7 +241,7 @@ module.exports = (router) => {
       }
     }
 
-    if (maxPrice !== null) { filters.push(`AND c.buyPrice <= ${parseInt(maxPrice)}`) }
+    if (maxPrice !== null) { filters.push(`AND c.buyPrice <= ${Math.max(0, parseInt(maxPrice, 10) || 999999)}`) }
 
     if (fleetCarriers !== null) {
       if (paramAsBoolean(fleetCarriers) === true) { filters.push('AND s.stationType = \'FleetCarrier\'') }
@@ -224,10 +283,19 @@ module.exports = (router) => {
         ORDER BY c.buyPrice ASC
           LIMIT ${MAX_COMMODITY_SORTED_RESULTS}`, sqlQueryParams)
 
-    // Parse prohibited field from JSON string to array
+    // Parse prohibited field from JSON string to array with error handling
     const parsedCommodities = commodities.map(commodity => ({
       ...commodity,
-      prohibited: commodity.prohibited ? JSON.parse(commodity.prohibited) : null
+      prohibited: commodity.prohibited
+        ? (() => {
+            try {
+              return JSON.parse(commodity.prohibited)
+            } catch (e) {
+              console.warn('⚠️  Invalid JSON in prohibited field:', e.message)
+              return null
+            }
+          })()
+        : null
     }))
 
     ctx.body = parsedCommodities
@@ -261,9 +329,15 @@ module.exports = (router) => {
 
       ctx.body = topCommodities
     } catch (error) {
-      console.error('Error fetching top commodities:', error)
-      ctx.status = 500
-      ctx.body = { error: 'Failed to fetch top commodities' }
+      console.warn('⚠️  Top commodities unavailable:', error.message)
+      // Always return 200 with fallback data
+      ctx.status = 200
+      ctx.body = {
+        commodities: [],
+        status: 'unavailable',
+        message: 'Top commodities data temporarily unavailable',
+        timestamp: new Date().toISOString()
+      }
     }
   }
 

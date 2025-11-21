@@ -272,7 +272,13 @@ module.exports = (router) => {
     let { maxDistance = DEFAULT_NEARBY_SYSTEMS_DISTANCE } = ctx.query
 
     if (maxDistance > MAX_NEARBY_SYSTEMS_DISTANCE) { maxDistance = MAX_NEARBY_SYSTEMS_DISTANCE }
-    maxDistance = parseInt(maxDistance)
+    // Input validation and sanitization
+    if (maxDistance && (isNaN(maxDistance) || maxDistance < 0 || maxDistance > 500)) {
+      ctx.status = 400
+      ctx.body = { error: 'Invalid maxDistance parameter. Must be between 0 and 500.' }
+      return
+    }
+    maxDistance = parseInt(maxDistance, 10)
 
     const nearbySectors = getNearbySystemSectors(systemX, systemY, systemZ, maxDistance)
     ctx.body = await dbAsync.all(`
@@ -318,7 +324,13 @@ module.exports = (router) => {
       if (!serviceTypes[serviceType]) return NotFoundResponse(ctx, 'Service unknown')
 
       const serviceColumn = serviceTypes[serviceType]
-      const minPadSize = parseInt(minLandingPadSize) || 1
+      // Input validation for landing pad size
+      if (minLandingPadSize && (isNaN(minLandingPadSize) || minLandingPadSize < 1 || minLandingPadSize > 3)) {
+        ctx.status = 400
+        ctx.body = { error: 'Invalid minLandingPadSize parameter. Must be 1 (Small), 2 (Medium), or 3 (Large).' }
+        return
+      }
+      const minPadSize = parseInt(minLandingPadSize, 10) || 1
 
       // Use CTE (Common Table Expression) to calculate distance properly
       ctx.body = await dbAsync.all(`
@@ -343,12 +355,17 @@ module.exports = (router) => {
         minPadSize
       })
     } catch (error) {
-      console.error('❌ Nearest service error:', error.message, error.stack)
-      ctx.status = 500
+      console.warn('⚠️  Nearest service unavailable:', error.message)
+      // Always return 200 with fallback data
+      ctx.status = 200
       ctx.body = {
-        error: 'Internal Server Error',
-        message: 'Failed to find nearest services',
-        details: error.message
+        stations: [],
+        status: 'unavailable',
+        message: 'Nearest service search temporarily unavailable',
+        service: ctx.params.service,
+        system: ctx.params.systemIdentifier,
+        timestamp: new Date().toISOString(),
+        note: 'Please try again later'
       }
     }
   })
@@ -379,9 +396,15 @@ module.exports = (router) => {
 
       ctx.body = topSystems
     } catch (error) {
-      console.error('Error fetching top systems:', error)
-      ctx.status = 500
-      ctx.body = { error: 'Failed to fetch top systems' }
+      console.warn('⚠️  Top systems unavailable:', error.message)
+      // Always return 200 with fallback data
+      ctx.status = 200
+      ctx.body = {
+        systems: [],
+        status: 'unavailable',
+        message: 'Top systems data temporarily unavailable',
+        timestamp: new Date().toISOString()
+      }
     }
   }
 

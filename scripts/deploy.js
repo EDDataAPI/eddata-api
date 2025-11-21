@@ -40,10 +40,20 @@ class DeploymentManager {
       this.log(`Executing: ${command}`)
     }
 
+    // Command injection prevention - validate allowed commands
+    const allowedCommands = [
+      'docker', 'docker-compose', 'sleep', 'echo'
+    ]
+    const commandWord = command.trim().split(' ')[0]
+    if (!allowedCommands.includes(commandWord)) {
+      throw new Error(`Command not allowed: ${commandWord}`)
+    }
+
     try {
       const result = execSync(command, {
         encoding: 'utf8',
         stdio: this.verbose ? 'inherit' : 'pipe',
+        timeout: 300000, // 5 minute timeout
         ...options
       })
       return result

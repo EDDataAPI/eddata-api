@@ -842,12 +842,19 @@ Search for stations by name (partial match supported).
 ## Error Responses
 
 ### Robust Error Handling
-The API is designed to minimize service interruptions. Instead of returning HTTP 500/503 errors that can break client applications, the API returns HTTP 200 responses with error information when services are temporarily unavailable.
+The API is comprehensively hardened against service interruptions. Instead of returning HTTP 500/503 errors that can break client applications, the API returns HTTP 200 responses with structured error information when services are temporarily unavailable.
+
+**Key Improvements:**
+- **Global Error Handler**: Catches all unhandled exceptions and returns user-friendly 200 responses
+- **Database Fallbacks**: All database operations include fallback data when queries fail
+- **JSON Parse Protection**: All JSON.parse operations are wrapped in try-catch blocks
+- **File Operation Safety**: All file reads include existence checks and error handling
+- **Graceful Degradation**: Services continue to operate with reduced functionality rather than failing completely
 
 ### Standard Error Format
 ```json
 {
-  "status": "error",
+  "status": "error|unavailable",
   "message": "Service temporarily unavailable",
   "info": "Database connection failed",
   "timestamp": "2025-11-19T10:00:00Z",
@@ -855,9 +862,10 @@ The API is designed to minimize service interruptions. Instead of returning HTTP
 }
 ```
 
-### Fallback Data
+### Fallback Data Examples
 When backend services are unavailable, endpoints return structured fallback data:
 
+**Statistics Endpoint:**
 ```json
 {
   "systems": 0,
@@ -865,6 +873,29 @@ When backend services are unavailable, endpoints return structured fallback data
   "status": "unavailable",
   "message": "Database statistics temporarily unavailable",
   "timestamp": "2025-11-19T10:00:00Z"
+}
+```
+
+**Commodities Endpoint:**
+```json
+{
+  "commodities": [],
+  "status": "unavailable", 
+  "message": "Top commodities data temporarily unavailable",
+  "timestamp": "2025-11-19T10:00:00Z"
+}
+```
+
+**Search Endpoints:**
+```json
+{
+  "stations": [],
+  "status": "unavailable",
+  "message": "Nearest service search temporarily unavailable",
+  "service": "interstellar-factors",
+  "system": "Sol",
+  "timestamp": "2025-11-19T10:00:00Z",
+  "note": "Please try again later"
 }
 ```
 
@@ -884,7 +915,7 @@ When backend services are unavailable, endpoints return structured fallback data
 }
 ```
 
-**Note:** Most errors now return HTTP 200 with error details to ensure better client compatibility.
+**Note:** Most errors now return HTTP 200 with structured error details to ensure maximum client compatibility and prevent service interruptions.
 
 ---
 

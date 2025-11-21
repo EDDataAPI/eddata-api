@@ -359,15 +359,23 @@ router.get('/api/v2/backup', async (ctx, next) => {
       fsPromises.readFile(downloadsPath, 'utf8')
     ])
 
-    const backups = JSON.parse(backupsData)
-    const downloads = JSON.parse(downloadsData)
+    let backups, downloads
+    try {
+      backups = JSON.parse(backupsData)
+      downloads = JSON.parse(downloadsData)
+    } catch (parseError) {
+      console.warn('⚠️  Invalid JSON in backup data:', parseError.message)
+      throw new Error('Backup data format error')
+    }
 
-    for (const database of backups.databases) {
-      database.download = {
-        url: downloads[database.name].url,
-        updated: downloads[database.name].created,
-        size: downloads[database.name].size,
-        sha256: downloads[database.name].sha256
+    for (const database of backups.databases || []) {
+      if (downloads[database.name]) {
+        database.download = {
+          url: downloads[database.name].url,
+          updated: downloads[database.name].created,
+          size: downloads[database.name].size,
+          sha256: downloads[database.name].sha256
+        }
       }
     }
 

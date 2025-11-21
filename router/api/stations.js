@@ -79,17 +79,32 @@ module.exports = (router) => {
         LIMIT 30
       `)
 
-      // Parse prohibited field from JSON string to array
+      // Parse prohibited field from JSON string to array with error handling
       const parsedStations = topStations.map(station => ({
         ...station,
-        prohibited: station.prohibited ? JSON.parse(station.prohibited) : null
+        prohibited: station.prohibited
+          ? (() => {
+              try {
+                return JSON.parse(station.prohibited)
+              } catch (e) {
+                console.warn('⚠️  Invalid JSON in prohibited field:', e.message)
+                return null
+              }
+            })()
+          : null
       }))
 
       ctx.body = parsedStations
     } catch (error) {
-      console.error('Error fetching top stations:', error)
-      ctx.status = 500
-      ctx.body = { error: 'Failed to fetch top stations' }
+      console.warn('⚠️  Top stations unavailable:', error.message)
+      // Always return 200 with fallback data
+      ctx.status = 200
+      ctx.body = {
+        stations: [],
+        status: 'unavailable',
+        message: 'Top stations data temporarily unavailable',
+        timestamp: new Date().toISOString()
+      }
     }
   }
 
