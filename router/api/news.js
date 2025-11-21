@@ -35,13 +35,52 @@ module.exports = (router) => {
     try {
       if (!fs.existsSync(EDDATA_MARKET_TICKER_CACHE)) {
         console.warn('⚠️  Commodity ticker cache file not found:', EDDATA_MARKET_TICKER_CACHE)
-        ctx.body = []
+        ctx.status = 200
+        ctx.body = {
+          hotTrades: [],
+          highValue: [],
+          mostActive: [],
+          timestamp: new Date().toISOString(),
+          status: 'unavailable',
+          message: 'Commodity ticker data not available'
+        }
         return
       }
-      ctx.body = JSON.parse(fs.readFileSync(EDDATA_MARKET_TICKER_CACHE, 'utf8'))
+
+      const fileContent = fs.readFileSync(EDDATA_MARKET_TICKER_CACHE, 'utf8')
+      if (!fileContent || fileContent.trim() === '') {
+        console.warn('⚠️  Commodity ticker cache file is empty')
+        ctx.status = 200
+        ctx.body = {
+          hotTrades: [],
+          highValue: [],
+          mostActive: [],
+          timestamp: new Date().toISOString(),
+          status: 'unavailable',
+          message: 'Commodity ticker data not available'
+        }
+        return
+      }
+
+      const parsedData = JSON.parse(fileContent)
+      ctx.status = 200
+      ctx.body = {
+        hotTrades: parsedData.hotTrades || [],
+        highValue: parsedData.highValue || [],
+        mostActive: parsedData.mostActive || [],
+        timestamp: parsedData.timestamp || new Date().toISOString()
+      }
     } catch (error) {
-      console.error('❌ Error reading commodity ticker:', error.message)
-      ctx.body = []
+      console.error('❌ Error reading commodity ticker:', error.message, error.stack)
+      ctx.status = 200
+      ctx.body = {
+        hotTrades: [],
+        highValue: [],
+        mostActive: [],
+        timestamp: new Date().toISOString(),
+        status: 'error',
+        message: 'Failed to read commodity ticker data'
+      }
     }
   }
 
