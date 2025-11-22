@@ -52,3 +52,6 @@ temp/
 
 # Documentation (keep in repo but ignore if generated)
 # MIGRATION.md
+
+# Symlink to collector data
+eddata-data
