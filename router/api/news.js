@@ -25,7 +25,14 @@ module.exports = (router) => {
       const parsedData = JSON.parse(fileContent)
       console.log('[GALNET] Parsed data type:', Array.isArray(parsedData) ? 'array' : typeof parsedData, 'items:', parsedData.length || Object.keys(parsedData).length)
       ctx.status = 200
-      ctx.body = Array.isArray(parsedData) ? parsedData : []
+      // Handle both array format and object with articles property
+      if (Array.isArray(parsedData)) {
+        ctx.body = parsedData
+      } else if (parsedData.articles && Array.isArray(parsedData.articles)) {
+        ctx.body = parsedData.articles
+      } else {
+        ctx.body = []
+      }
     } catch (error) {
       console.error('❌ [GALNET] Error reading news:', error.message, error.stack)
       ctx.status = 200 // Return 200 with empty array instead of 500
