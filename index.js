@@ -64,13 +64,22 @@ const router = require('./router')
         'http://localhost:3001'
       ]
       const origin = ctx.request.header.origin
-      if (!origin || allowedOrigins.includes(origin)) {
-        return origin || '*'
+      
+      // Allow requests without origin (server-to-server, curl, etc.)
+      if (!origin) {
+        return '*'
       }
-      // Allow any eddata.dev subdomain
-      if (origin && origin.match(/^https?:\/\/[a-z0-9-]+\.eddata\.dev$/)) {
+      
+      // Allow exact matches
+      if (allowedOrigins.includes(origin)) {
         return origin
       }
+      
+      // Allow any eddata.dev subdomain
+      if (origin.match(/^https?:\/\/[a-z0-9-]+\.eddata\.dev$/)) {
+        return origin
+      }
+      
       return allowedOrigins[0]
     },
     credentials: true,
