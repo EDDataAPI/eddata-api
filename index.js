@@ -114,9 +114,8 @@ const router = require('./router')
   router.get('/api', async (ctx) => { ctx.body = await printStats() })
 
   // Redirect all /v1 API routes to the new /v2 routes
-  // Note: In @koa/router v15+, custom regex in params is not supported
-  // The .* wildcard is replaced with a simple catch-all parameter
-  router.get('/api/v1/:path*', async (ctx, next) => {
+  // Note: In @koa/router v15+, we use a wildcard matcher
+  router.get('/api/v1/{/*path}', async (ctx) => {
     const path = ctx.params.path || ''
     const newUrl = `${EDDATA_API_BASE_URL}/v2/${path}`
     ctx.redirect(newUrl)
