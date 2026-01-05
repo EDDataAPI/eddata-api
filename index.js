@@ -8,7 +8,7 @@ const _origConsole = {
   error: console.error.bind(console),
   debug: console.debug ? console.debug.bind(console) : console.log.bind(console)
 }
-const _ts = () => new Date().toTimeString().substr(0, 8)
+const _ts = () => new Date().toTimeString().substring(0, 8)
 for (const level of ['log', 'info', 'warn', 'error', 'debug']) {
   console[level] = (...args) => {
     const prefix = `[${_ts()}]`
@@ -64,22 +64,22 @@ const router = require('./router')
         'http://localhost:3001'
       ]
       const origin = ctx.request.header.origin
-      
+
       // Allow requests without origin (server-to-server, curl, etc.)
       if (!origin) {
         return '*'
       }
-      
+
       // Allow exact matches
       if (allowedOrigins.includes(origin)) {
         return origin
       }
-      
+
       // Allow any eddata.dev subdomain
       if (origin.match(/^https?:\/\/[a-z0-9-]+\.eddata\.dev$/)) {
         return origin
       }
-      
+
       return allowedOrigins[0]
     },
     credentials: true,

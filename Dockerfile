@@ -1,5 +1,5 @@
 # Multi-stage build for optimal image size and security
-FROM node:24.11.0-alpine AS base
+FROM node:24-alpine AS base
 
 # Install system dependencies for native modules
 RUN apk add --no-cache \
