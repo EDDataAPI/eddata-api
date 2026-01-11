@@ -142,6 +142,30 @@ const statsHandler = async (ctx, next) => {
 router.get('/api/v2/stats', statsHandler)
 router.get('/v2/stats', statsHandler)
 
+// Trigger stats regeneration (POST endpoint)
+const refreshStatsHandler = async (ctx, next) => {
+  console.log('Manual stats refresh triggered via API')
+  
+  ctx.body = {
+    status: 'started',
+    message: 'Stats generation has been triggered',
+    timestamp: new Date().toISOString()
+  }
+
+  // Run stats generation asynchronously (non-blocking)
+  const { exec } = require('child_process')
+  exec('cd ../eddata-collector && npm run stats', (error, stdout, stderr) => {
+    if (error) {
+      console.error('Manual stats generation failed:', error.message)
+    } else {
+      console.log('Manual stats generation completed successfully')
+    }
+  })
+}
+
+router.post('/api/v2/refresh-stats', refreshStatsHandler)
+router.post('/v2/refresh-stats', refreshStatsHandler)
+
 // Database size endpoints (with and without /api prefix)
 const databaseSizeHandler = async (ctx, next) => {
   try {
