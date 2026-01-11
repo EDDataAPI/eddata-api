@@ -143,24 +143,17 @@ router.get('/api/v2/stats', statsHandler)
 router.get('/v2/stats', statsHandler)
 
 // Trigger stats regeneration (POST endpoint)
+// Note: This endpoint just returns info - actual stats generation happens hourly via cron
 const refreshStatsHandler = async (ctx, next) => {
-  console.log('Manual stats refresh triggered via API')
+  console.log('Stats refresh requested via API')
   
   ctx.body = {
-    status: 'started',
-    message: 'Stats generation has been triggered',
+    status: 'info',
+    message: 'Stats are automatically updated every hour at :00. Next update in approximately ' + 
+             (60 - new Date().getMinutes()) + ' minutes.',
+    schedule: 'Hourly at :00',
     timestamp: new Date().toISOString()
   }
-
-  // Run stats generation asynchronously (non-blocking)
-  const { exec } = require('child_process')
-  exec('cd ../eddata-collector && npm run stats', (error, stdout, stderr) => {
-    if (error) {
-      console.error('Manual stats generation failed:', error.message)
-    } else {
-      console.log('Manual stats generation completed successfully')
-    }
-  })
 }
 
 router.post('/api/v2/refresh-stats', refreshStatsHandler)
