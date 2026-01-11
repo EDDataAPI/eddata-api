@@ -133,21 +133,19 @@ const router = require('./router')
     }
   })
 
-  // Error handling middleware - prevent 500/503 errors from reaching clients
+  // Error handling middleware for actual errors (500s) - must be BEFORE routes
   app.use(async (ctx, next) => {
     try {
       await next()
     } catch (err) {
       console.error('Request error:', err.message)
 
-      // Always try to return 200 with error info to prevent 503 errors
-      ctx.status = 200
+      // Return appropriate error status
+      ctx.status = err.status || 500
       ctx.body = {
         status: 'error',
-        message: 'Service temporarily unavailable',
-        info: err.message,
-        timestamp: new Date().toISOString(),
-        note: 'Please try again later or contact support if the issue persists'
+        message: err.message || 'Internal server error',
+        timestamp: new Date().toISOString()
       }
 
       // Still emit the error for logging
@@ -155,7 +153,9 @@ const router = require('./router')
     }
   })
 
+  // Mount routes - must be AFTER error handler but BEFORE 404 handler
   app.use(router.routes())
+  app.use(router.allowedMethods())
 
   app.listen(EDDATA_API_LOCAL_PORT)
   console.log(await printStats())
