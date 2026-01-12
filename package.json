@@ -26,8 +26,8 @@
   "dependencies": {
     "@koa/cors": "^5.0.0",
     "@koa/router": "^15.2.0",
-    "axios": "^1.7.9",
-    "better-sqlite3": "^12.5.0",
+    "axios": "^1.13.2",
+    "better-sqlite3": "^12.6.0",
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
     "koa": "^3.1.1",
