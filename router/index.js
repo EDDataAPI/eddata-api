@@ -145,14 +145,13 @@ router.get('/v2/stats', statsHandler)
 // Trigger stats regeneration (POST endpoint)
 // Forwards request to collector service to trigger manual stats generation
 const refreshStatsHandler = async (ctx, next) => {
-  console.log('Stats refresh requested via API - forwarding to collector')
+  const collectorHost = process.env.EDDATA_COLLECTOR_HOST || 'eddata-collector'
+  const collectorPort = process.env.EDDATA_COLLECTOR_LOCAL_PORT || '3002'
+  
+  console.log(`Stats refresh requested via API - forwarding to ${collectorHost}:${collectorPort}`)
   
   try {
     const http = require('http')
-    
-    // Forward request to collector service
-    const collectorHost = process.env.EDDATA_COLLECTOR_HOST || 'eddata-collector'
-    const collectorPort = process.env.EDDATA_COLLECTOR_LOCAL_PORT || '3002'
     
     await new Promise((resolve, reject) => {
       const options = {
@@ -163,10 +162,14 @@ const refreshStatsHandler = async (ctx, next) => {
         timeout: 5000
       }
       
+      console.log('Sending request to collector:', options)
+      
       const req = http.request(options, (res) => {
+        console.log(`Collector responded with status: ${res.statusCode}`)
         let data = ''
         res.on('data', (chunk) => { data += chunk })
         res.on('end', () => {
+          console.log('Collector response:', data)
           if (res.statusCode === 200) {
             resolve(data)
           } else {
@@ -175,8 +178,13 @@ const refreshStatsHandler = async (ctx, next) => {
         })
       })
       
-      req.on('error', reject)
+      req.on('error', (error) => {
+        console.error('HTTP request error:', error.message, error.code)
+        reject(error)
+      })
+      
       req.on('timeout', () => {
+        console.error('Request to collector timed out')
         req.destroy()
         reject(new Error('Timeout'))
       })
@@ -197,6 +205,7 @@ const refreshStatsHandler = async (ctx, next) => {
       status: 'error',
       message: 'Failed to trigger stats refresh',
       error: error.message,
+      collector: `${collectorHost}:${collectorPort}`,
       timestamp: new Date().toISOString()
     }
   }
