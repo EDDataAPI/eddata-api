@@ -143,16 +143,62 @@ router.get('/api/v2/stats', statsHandler)
 router.get('/v2/stats', statsHandler)
 
 // Trigger stats regeneration (POST endpoint)
-// Note: This endpoint just returns info - actual stats generation happens hourly via cron
+// Forwards request to collector service to trigger manual stats generation
 const refreshStatsHandler = async (ctx, next) => {
-  console.log('Stats refresh requested via API')
+  console.log('Stats refresh requested via API - forwarding to collector')
   
-  ctx.body = {
-    status: 'info',
-    message: 'Stats are automatically updated every hour at :00. Next update in approximately ' + 
-             (60 - new Date().getMinutes()) + ' minutes.',
-    schedule: 'Hourly at :00',
-    timestamp: new Date().toISOString()
+  try {
+    const http = require('http')
+    
+    // Forward request to collector service
+    const collectorHost = process.env.EDDATA_COLLECTOR_HOST || 'eddata-collector'
+    const collectorPort = process.env.EDDATA_COLLECTOR_LOCAL_PORT || '3002'
+    
+    await new Promise((resolve, reject) => {
+      const options = {
+        hostname: collectorHost,
+        port: collectorPort,
+        path: '/refresh-stats',
+        method: 'POST',
+        timeout: 5000
+      }
+      
+      const req = http.request(options, (res) => {
+        let data = ''
+        res.on('data', (chunk) => { data += chunk })
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            resolve(data)
+          } else {
+            reject(new Error(`Collector returned status ${res.statusCode}`))
+          }
+        })
+      })
+      
+      req.on('error', reject)
+      req.on('timeout', () => {
+        req.destroy()
+        reject(new Error('Timeout'))
+      })
+      
+      req.end()
+    })
+    
+    ctx.body = {
+      status: 'triggered',
+      message: 'Stats regeneration has been triggered successfully',
+      note: 'Stats generation runs in the background and may take several minutes',
+      timestamp: new Date().toISOString()
+    }
+  } catch (error) {
+    console.error('Failed to trigger stats refresh:', error.message)
+    ctx.status = 503
+    ctx.body = {
+      status: 'error',
+      message: 'Failed to trigger stats refresh',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    }
   }
 }
 
